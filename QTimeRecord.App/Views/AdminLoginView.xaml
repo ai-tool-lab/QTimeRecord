@@ -1,0 +1,160 @@
+<UserControl x:Class="QTimeRecord.App.Views.AdminLoginView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:QTimeRecord.App.Controls"
+             xmlns:vm="clr-namespace:QTimeRecord.App.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:AdminLoginViewModel}"
+             Background="{StaticResource Brush.Surface}"
+             Focusable="True"
+             PreviewKeyDown="OnPreviewKeyDown">
+
+    <!--
+        1366x768 を前提に2列で組む。
+        モックは縦1列だが、その高さ（1086px）では入力欄とテンキーとボタンが
+        画面に収まらず、エラーやロックの案内が出た瞬間にボタンが押せなくなる。
+    -->
+    <Border Background="{StaticResource Brush.SurfaceContainerLowest}"
+            BorderBrush="{StaticResource Brush.BorderSubtle}"
+            BorderThickness="1"
+            CornerRadius="{StaticResource Radius.Card}"
+            Margin="24"
+            Padding="40,32"
+            MaxWidth="1100"
+            VerticalAlignment="Center">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!-- 左: 状況と操作 -->
+            <Grid Grid.Column="0" Margin="0,0,40,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0">
+                    <TextBlock Text="管理者ログイン" Style="{StaticResource Text.HeadlineLg}" />
+                    <TextBlock Text="店舗の管理・設定を行うにはパスワードを入力してください。"
+                               Style="{StaticResource Text.BodyLg}"
+                               Foreground="{StaticResource Brush.OnSurfaceVariant}"
+                               TextWrapping="Wrap"
+                               Margin="0,6,0,0" />
+
+                    <!--
+                        対象店舗は選ばせず、表示だけにする（1端末＝1店舗 → plan.md Q1）。
+                        選択にすると、誤った店舗にログインできてしまう。
+                    -->
+                    <Border Background="{StaticResource Brush.SurfaceContainerLow}"
+                            CornerRadius="{StaticResource Radius.Button}"
+                            Padding="16,10"
+                            Margin="0,20,0,0">
+                        <StackPanel>
+                            <TextBlock Text="対象店舗"
+                                       Style="{StaticResource Text.LabelMd}"
+                                       Foreground="{StaticResource Brush.TextMuted}" />
+                            <TextBlock Style="{StaticResource Text.HeadlineSm}" Margin="0,2,0,0">
+                                <Run Text="{Binding StoreName, Mode=OneWay}" />
+                                <Run Text="{Binding CompanyName, Mode=OneWay}"
+                                     FontSize="14"
+                                     Foreground="{StaticResource Brush.OnSurfaceVariant}" />
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 入力欄。伏せ字と桁数だけを出す -->
+                    <Grid Margin="0,20,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0"
+                                   Text="管理者パスワード (PIN)"
+                                   Style="{StaticResource Text.LabelLg}"
+                                   Foreground="{StaticResource Brush.OnSurfaceVariant}"
+                                   VerticalAlignment="Center" />
+
+                        <Border Grid.Column="1"
+                                Background="{StaticResource Brush.SurfaceContainerLow}"
+                                CornerRadius="{StaticResource Radius.Button}"
+                                Padding="10,2">
+                            <TextBlock Text="{Binding PinIndicator}"
+                                       Style="{StaticResource Text.TabularData}"
+                                       Foreground="{StaticResource Brush.Secondary}" />
+                        </Border>
+                    </Grid>
+
+                    <Border Background="{StaticResource Brush.SurfaceContainerLow}"
+                            BorderBrush="{StaticResource Brush.OutlineVariant}"
+                            BorderThickness="1"
+                            CornerRadius="{StaticResource Radius.Button}"
+                            MinHeight="{StaticResource Size.TouchMin}"
+                            Padding="20,0"
+                            Margin="0,8,0,0">
+                        <Grid>
+                            <TextBlock Text="テンキーで入力してください"
+                                       Style="{StaticResource Text.BodyLg}"
+                                       Foreground="{StaticResource Brush.TextMuted}"
+                                       VerticalAlignment="Center"
+                                       Visibility="{Binding MaskedPin, Converter={StaticResource NullToVisible}}" />
+
+                            <TextBlock Text="{Binding MaskedPin}"
+                                       Style="{StaticResource Text.HeadlineMd}"
+                                       VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+                </StackPanel>
+
+                <!-- 案内。入力ミスの残り回数、またはロックの残り時間 -->
+                <StackPanel Grid.Row="1" VerticalAlignment="Top" Margin="0,16,0,0">
+                    <Border Background="{StaticResource Brush.ErrorContainer}"
+                            CornerRadius="{StaticResource Radius.Button}"
+                            Padding="20,12"
+                            Visibility="{Binding ErrorMessage, Converter={StaticResource NullToCollapsed}}">
+                        <TextBlock Text="{Binding ErrorMessage}"
+                                   Style="{StaticResource Text.BodyLg}"
+                                   Foreground="{StaticResource Brush.OnErrorContainer}"
+                                   TextWrapping="Wrap" />
+                    </Border>
+
+                    <!-- ロック中。残り時間を秒まで出し、いつ再開できるか分かるようにする -->
+                    <Border Background="{StaticResource Brush.ErrorContainer}"
+                            CornerRadius="{StaticResource Radius.Button}"
+                            Padding="20,12"
+                            Visibility="{Binding LockMessage, Converter={StaticResource NullToCollapsed}}">
+                        <TextBlock Text="{Binding LockMessage}"
+                                   Style="{StaticResource Text.HeadlineSm}"
+                                   Foreground="{StaticResource Brush.OnErrorContainer}"
+                                   TextWrapping="Wrap" />
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Grid.Row="2">
+                    <Button Content="ログイン"
+                            Style="{StaticResource Button.PrimaryTouch}"
+                            Command="{Binding SubmitCommand}" />
+
+                    <Button Content="キャンセル"
+                            Style="{StaticResource Button.SecondaryTouch}"
+                            Command="{Binding CancelCommand}"
+                            Margin="0,12,0,0" />
+                </StackPanel>
+            </Grid>
+
+            <!-- 右: テンキー -->
+            <controls:NumericKeypad x:Name="Keypad"
+                                    Grid.Column="1"
+                                    Width="420"
+                                    Height="400"
+                                    IsEnabled="{Binding IsLocked, Converter={StaticResource InverseBool}}"
+                                    MaxLength="{Binding MaxLength, Mode=OneTime}"
+                                    Value="{Binding Pin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+        </Grid>
+    </Border>
+</UserControl>

@@ -1,0 +1,74 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:conv="clr-namespace:QTimeRecord.App.Converters"
+                    xmlns:vm="clr-namespace:QTimeRecord.App.ViewModels"
+                    xmlns:views="clr-namespace:QTimeRecord.App.Views">
+
+  <!--
+    変換器と、ViewModel から View への対応。
+    App.xaml に直接書かず切り出しているのは、目視確認用の描画（Tests/ViewRenderer）から
+    同じ定義を読み込むため。二重に持つと、画面を足したときに片方だけ古くなる。
+  -->
+
+        <conv:NullToCollapsedConverter x:Key="NullToCollapsed" />
+        <conv:NullToVisibleConverter x:Key="NullToVisible" />
+        <conv:BoolToVisibilityConverter x:Key="BoolToVisible" />
+        <conv:InverseBooleanConverter x:Key="InverseBool" />
+<conv:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisible" />
+<conv:BytesToImageConverter x:Key="BytesToImage" />
+
+        <!--
+            ViewModel と View の対応。NavigationService は ViewModel を差し込むだけで、
+            どの View を出すかは WPF がここから解決する。
+        -->
+        <DataTemplate DataType="{x:Type vm:SetupViewModel}">
+            <views:SetupView />
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:IdleViewModel}">
+            <views:IdleView />
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:PunchSelectViewModel}">
+            <views:PunchSelectView />
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:PunchResultViewModel}">
+            <views:PunchResultView />
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:AdminLoginViewModel}">
+            <views:AdminLoginView />
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:AdminShellViewModel}">
+            <views:AdminShellView />
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:AttendanceViewModel}">
+    <views:AttendanceView />
+  </DataTemplate>
+
+  <DataTemplate DataType="{x:Type vm:StaffViewModel}">
+    <views:StaffView />
+  </DataTemplate>
+
+  <DataTemplate DataType="{x:Type vm:StoreSettingsViewModel}">
+    <views:StoreSettingsView />
+  </DataTemplate>
+
+  <!-- 未実装のタブ。空白を出すと壊れているようにしか見えない -->
+        <DataTemplate DataType="{x:Type vm:AdminPlaceholder}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Text="{Binding Title}"
+                           Style="{StaticResource Text.HeadlineMd}"
+                           HorizontalAlignment="Center" />
+                <TextBlock Text="{Binding Message}"
+                           Style="{StaticResource Text.BodyLg}"
+                           Foreground="{StaticResource Brush.TextMuted}"
+                           HorizontalAlignment="Center"
+                           Margin="0,8,0,0" />
+            </StackPanel>
+        </DataTemplate>
+
+</ResourceDictionary>

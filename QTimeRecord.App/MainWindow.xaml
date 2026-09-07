@@ -1,0 +1,25 @@
+<Window x:Class="QTimeRecord.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:QTimeRecord.App.ViewModels"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:ShellViewModel}"
+        Title="QTimeRecord"
+        Height="768" Width="1366"
+        MinHeight="720" MinWidth="1280"
+        WindowStartupLocation="CenterScreen"
+        WindowState="Maximized"
+        Background="{StaticResource Brush.Surface}"
+        FontFamily="{StaticResource Font.Ui}"
+        UseLayoutRounding="True"
+        TextOptions.TextFormattingMode="Ideal">
+
+    <!--
+        キオスク用途のためウィンドウは1つに固定し、この ContentControl を差し替えて遷移する。
+        どの View を出すかは App.xaml の DataTemplate が ViewModel の型から解決する。
+        最小サイズは 1280x720。モックの想定解像度（1366x768 / 1920x1080）の下限に合わせている。
+    -->
+    <ContentControl Content="{Binding CurrentView}" />
+</Window>

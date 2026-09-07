@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\QTimeRecord.Core\QTimeRecord.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+
+    <!--
+      MIT / Apache-2.0 は、配布物に著作権表示とライセンス本文を含めることを求めている。
+      同梱し忘れるとライセンス違反になるため、ビルド時に出力へ入れる。
+    -->
+    <Content Include="..\THIRD-PARTY-NOTICES.txt"
+             Link="THIRD-PARTY-NOTICES.txt"
+             CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+  </ItemGroup>
+
+</Project>

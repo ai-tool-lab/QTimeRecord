@@ -1,0 +1,28 @@
+# ビルド成果物
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.suo
+
+# Visual Studio
+.vs/
+
+# テスト結果
+[Tt]est[Rr]esult*/
+*.coverage
+*.trx
+
+# ローカルDB（%LOCALAPPDATA% に置くため通常はここに出ないが、取り違え防止に）
+*.db
+*.db-shm
+*.db-wal
+
+# ログ
+logs/
+*.log
+
+# 発行物
+publish/
+*.nupkg

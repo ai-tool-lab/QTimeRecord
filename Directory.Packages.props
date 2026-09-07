@@ -1,0 +1,40 @@
+<Project>
+
+  <!--
+    NuGet のバージョンを1か所で管理する（中央パッケージ管理）。
+    各 .csproj では <PackageReference Include="..." /> とだけ書き、Version は書かない。
+    プロジェクトごとにバージョンがずれて、実行時だけ壊れる事故を防ぐため。
+  -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <ItemGroup Label="データベース">
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.11" />
+  </ItemGroup>
+
+  <ItemGroup Label="デバイス・QR">
+    <PackageVersion Include="System.IO.Ports" Version="10.0.11" />
+    <PackageVersion Include="QRCoder" Version="1.8.0" />
+  </ItemGroup>
+
+  <ItemGroup Label="ログ">
+    <PackageVersion Include="Serilog" Version="4.4.0" />
+    <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageVersion Include="Serilog.Extensions.Logging" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup Label="アプリ基盤">
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.11" />
+  </ItemGroup>
+
+  <ItemGroup Label="テスト">
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+  </ItemGroup>
+
+</Project>

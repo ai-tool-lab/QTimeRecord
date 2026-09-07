@@ -1,0 +1,140 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!--
+    入力欄。既定の WPF テンプレートは Windows の旧世代の見た目で、
+    平坦なボタンと並べると壊れて見える。最小限だけ差し替える。
+    タッチの最小高さ（64px）はここで担保する。
+  -->
+
+  <Style x:Key="Input.Base" TargetType="Control">
+    <Setter Property="MinHeight" Value="{StaticResource Size.TouchMin}" />
+    <Setter Property="Background" Value="{StaticResource Brush.SurfaceContainerLowest}" />
+    <Setter Property="Foreground" Value="{StaticResource Brush.OnSurface}" />
+    <Setter Property="BorderBrush" Value="{StaticResource Brush.OutlineVariant}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="FontFamily" Value="{StaticResource Font.Ui}" />
+    <Setter Property="FontSize" Value="16" />
+    <Setter Property="Padding" Value="14,0" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
+
+  <Style TargetType="TextBox" BasedOn="{StaticResource Input.Base}">
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="TextBox">
+          <Border Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{StaticResource Radius.Button}">
+            <ScrollViewer x:Name="PART_ContentHost"
+                          Margin="{TemplateBinding Padding}"
+                          VerticalAlignment="Center" />
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style TargetType="ComboBox" BasedOn="{StaticResource Input.Base}">
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ComboBox">
+          <Grid>
+            <ToggleButton x:Name="Toggle"
+                          Focusable="False"
+                          ClickMode="Press"
+                          IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+              <ToggleButton.Template>
+                <ControlTemplate TargetType="ToggleButton">
+                  <Border x:Name="Root"
+                          Background="{StaticResource Brush.SurfaceContainerLowest}"
+                          BorderBrush="{StaticResource Brush.OutlineVariant}"
+                          BorderThickness="1"
+                          CornerRadius="{StaticResource Radius.Button}">
+                    <!-- 開く印。文字と重ならないよう右に余白を取る -->
+                    <Path HorizontalAlignment="Right"
+                          VerticalAlignment="Center"
+                          Margin="0,0,16,0"
+                          Data="M 0,0 L 10,0 L 5,6 Z"
+                          Fill="{StaticResource Brush.OnSurfaceVariant}" />
+                  </Border>
+                  <ControlTemplate.Triggers>
+                    <Trigger Property="IsPressed" Value="True">
+                      <Setter TargetName="Root" Property="Background"
+                              Value="{StaticResource Brush.SurfaceContainerLow}" />
+                    </Trigger>
+                    <Trigger Property="IsEnabled" Value="False">
+                      <Setter TargetName="Root" Property="Opacity" Value="0.5" />
+                    </Trigger>
+                  </ControlTemplate.Triggers>
+                </ControlTemplate>
+              </ToggleButton.Template>
+            </ToggleButton>
+
+            <ContentPresenter Content="{TemplateBinding SelectionBoxItem}"
+                              ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                              ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}"
+                              Margin="{TemplateBinding Padding}"
+                              HorizontalAlignment="Left"
+                              VerticalAlignment="Center"
+                              IsHitTestVisible="False" />
+
+            <Popup x:Name="PART_Popup"
+                   AllowsTransparency="True"
+                   Placement="Bottom"
+                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                   PopupAnimation="None">
+              <Border Background="{StaticResource Brush.SurfaceContainerLowest}"
+                      BorderBrush="{StaticResource Brush.OutlineVariant}"
+                      BorderThickness="1"
+                      CornerRadius="{StaticResource Radius.Button}"
+                      MinWidth="{TemplateBinding ActualWidth}"
+                      MaxHeight="360"
+                      Margin="0,4,0,0">
+                <Border.Effect>
+                  <DropShadowEffect BlurRadius="16" ShadowDepth="2" Opacity="0.16" Color="#111827" />
+                </Border.Effect>
+                <ScrollViewer>
+                  <ItemsPresenter />
+                </ScrollViewer>
+              </Border>
+            </Popup>
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- 選択肢もタッチで押せる高さにする -->
+  <Style TargetType="ComboBoxItem">
+    <Setter Property="MinHeight" Value="48" />
+    <Setter Property="Padding" Value="14,0" />
+    <Setter Property="FontFamily" Value="{StaticResource Font.Ui}" />
+    <Setter Property="FontSize" Value="16" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ComboBoxItem">
+          <Border x:Name="Root"
+                  Background="Transparent"
+                  Padding="{TemplateBinding Padding}"
+                  MinHeight="{TemplateBinding MinHeight}">
+            <ContentPresenter VerticalAlignment="Center" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsHighlighted" Value="True">
+              <Setter TargetName="Root" Property="Background"
+                      Value="{StaticResource Brush.SurfaceContainerLow}" />
+            </Trigger>
+            <Trigger Property="IsSelected" Value="True">
+              <Setter TargetName="Root" Property="Background"
+                      Value="{StaticResource Brush.PrimaryFixed}" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+</ResourceDictionary>

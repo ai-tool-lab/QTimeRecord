@@ -1,0 +1,128 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!--
+    このファイルは DESIGN.md の front matter から生成した。
+    色や文字サイズを変えるときは DESIGN.md を直し、生成し直すこと。
+    ここだけ手で書き換えるとデザイン定義と実装がずれる。
+  -->
+
+  <!--
+    フォント: DESIGN.md は Inter / Noto Sans を指定している。
+    現時点ではフォントファイルを同梱していないため、フォールバックで代替する。
+    同梱する場合は OFL のライセンス表示が必要（THIRD-PARTY-NOTICES.txt）。
+  -->
+  <FontFamily x:Key="Font.Ui">Noto Sans JP, Yu Gothic UI, Meiryo UI, Segoe UI</FontFamily>
+  <FontFamily x:Key="Font.Numeric">Inter, Segoe UI, Consolas</FontFamily>
+
+  <Style x:Key="Text.ClockDisplay" TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource Font.Numeric}" />
+    <Setter Property="FontSize" Value="64" />
+    <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="LineHeight" Value="72" />
+    <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+    <Setter Property="Foreground" Value="{StaticResource Brush.OnSurface}" />
+    <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
+  </Style>
+
+  <Style x:Key="Text.ClockDisplayMobile" TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource Font.Numeric}" />
+    <Setter Property="FontSize" Value="44" />
+    <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="LineHeight" Value="52" />
+    <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+    <Setter Property="Foreground" Value="{StaticResource Brush.OnSurface}" />
+    <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
+  </Style>
+
+  <Style x:Key="Text.HeadlineLg" TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource Font.Ui}" />
+    <Setter Property="FontSize" Value="32" />
+    <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="LineHeight" Value="40" />
+    <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+    <Setter Property="Foreground" Value="{StaticResource Brush.OnSurface}" />
+    <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
+  </Style>
+
+  <Style x:Key="Text.HeadlineMd" TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource Font.Ui}" />
+    <Setter Property="FontSize" Value="24" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="LineHeight" Value="32" />
+    <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+    <Setter Property="Foreground" Value="{StaticResource Brush.OnSurface}" />
+    <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
+  </Style>
+
+  <Style x:Key="Text.HeadlineSm" TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource Font.Ui}" />
+    <Setter Property="FontSize" Value="20" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="LineHeight" Value="28" />
+    <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+    <Setter Property="Foreground" Value="{StaticResource Brush.OnSurface}" />
+    <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
+  </Style>
+
+  <Style x:Key="Text.KioskButton" TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource Font.Ui}" />
+    <Setter Property="FontSize" Value="22" />
+    <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="LineHeight" Value="28" />
+    <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+    <Setter Property="Foreground" Value="{StaticResource Brush.OnSurface}" />
+    <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
+  </Style>
+
+  <Style x:Key="Text.BodyLg" TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource Font.Ui}" />
+    <Setter Property="FontSize" Value="16" />
+    <Setter Property="FontWeight" Value="Normal" />
+    <Setter Property="LineHeight" Value="24" />
+    <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+    <Setter Property="Foreground" Value="{StaticResource Brush.OnSurface}" />
+    <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
+  </Style>
+
+  <Style x:Key="Text.BodyMd" TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource Font.Ui}" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="FontWeight" Value="Normal" />
+    <Setter Property="LineHeight" Value="20" />
+    <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+    <Setter Property="Foreground" Value="{StaticResource Brush.OnSurface}" />
+    <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
+  </Style>
+
+  <Style x:Key="Text.LabelLg" TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource Font.Numeric}" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="LineHeight" Value="20" />
+    <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+    <Setter Property="Foreground" Value="{StaticResource Brush.OnSurface}" />
+    <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
+  </Style>
+
+  <Style x:Key="Text.LabelMd" TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource Font.Numeric}" />
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="LineHeight" Value="16" />
+    <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+    <Setter Property="Foreground" Value="{StaticResource Brush.OnSurface}" />
+    <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
+  </Style>
+
+  <Style x:Key="Text.TabularData" TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource Font.Numeric}" />
+    <Setter Property="FontSize" Value="15" />
+    <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="LineHeight" Value="22" />
+    <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+    <Setter Property="Foreground" Value="{StaticResource Brush.OnSurface}" />
+    <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
+  </Style>
+
+</ResourceDictionary>

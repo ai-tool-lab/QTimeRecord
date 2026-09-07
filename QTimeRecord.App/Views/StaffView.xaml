@@ -1,0 +1,383 @@
+<UserControl x:Class="QTimeRecord.App.Views.StaffView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:QTimeRecord.App.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:StaffViewModel}">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <!-- 左: 名簿 -->
+        <Grid Grid.Column="0" Margin="0,0,20,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Grid Grid.Column="0">
+                    <TextBox x:Name="SearchBox"
+                             Text="{Binding Search, UpdateSourceTrigger=PropertyChanged, Delay=250}"
+                             MinWidth="280" />
+                    <!-- 空欄のままでは何を入れる欄か分からない -->
+                    <TextBlock Text="スタッフ名・社員番号で検索"
+                               Style="{StaticResource Text.BodyLg}"
+                               Foreground="{StaticResource Brush.TextMuted}"
+                               VerticalAlignment="Center"
+                               Margin="16,0,0,0"
+                               IsHitTestVisible="False"
+                               Visibility="{Binding Search, Converter={StaticResource NullToVisible}}" />
+                </Grid>
+
+                <Button Grid.Column="1"
+                        Content="新規スタッフ登録"
+                        Style="{StaticResource Button.PrimaryTouch}"
+                        Command="{Binding AddCommand}"
+                        MinWidth="220"
+                        Margin="16,0,0,0" />
+            </Grid>
+
+            <!-- 絞り込み。4つなのでボタンで出し、いま何を見ているか常に分かるようにする -->
+            <ListBox Grid.Row="1"
+                     ItemsSource="{x:Static vm:StaffViewModel.Filters}"
+                     SelectedItem="{Binding SelectedFilter}"
+                     Background="Transparent"
+                     BorderThickness="0"
+                     Margin="0,12,0,0">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListBoxItem">
+                                    <Border x:Name="Root"
+                                            Background="{TemplateBinding Background}"
+                                            CornerRadius="{StaticResource Radius.Button}"
+                                            MinHeight="48"
+                                            Margin="0,0,8,0"
+                                            Padding="16,10">
+                                        <ContentPresenter HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="Root" Property="Background"
+                                                    Value="{StaticResource Brush.Secondary}" />
+                                            <Setter Property="Foreground"
+                                                    Value="{StaticResource Brush.OnSecondary}" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Setter Property="Background" Value="{StaticResource Brush.SurfaceContainerLow}" />
+                        <Setter Property="Foreground" Value="{StaticResource Brush.OnSurface}" />
+                        <Setter Property="FontFamily" Value="{StaticResource Font.Ui}" />
+                        <Setter Property="FontSize" Value="15" />
+                        <Setter Property="FontWeight" Value="SemiBold" />
+                        <Setter Property="Cursor" Value="Hand" />
+                    </Style>
+                </ListBox.ItemContainerStyle>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Label}" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <TextBlock Grid.Row="2"
+                       Text="{Binding CountLabel}"
+                       Style="{StaticResource Text.LabelLg}"
+                       Foreground="{StaticResource Brush.OnSurfaceVariant}"
+                       Margin="0,16,0,8" />
+
+            <Grid Grid.Row="3">
+                <DataGrid ItemsSource="{Binding Rows}"
+                          SelectedItem="{Binding SelectedStaff}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          HeadersVisibility="Column"
+                          GridLinesVisibility="Horizontal"
+                          HorizontalGridLinesBrush="{StaticResource Brush.BorderSubtle}"
+                          Background="Transparent"
+                          RowBackground="{StaticResource Brush.SurfaceContainerLowest}"
+                          BorderThickness="0"
+                          RowHeight="56"
+                          ColumnHeaderHeight="44"
+                          SelectionMode="Single"
+                          CanUserAddRows="False"
+                          CanUserResizeRows="False"
+                          EnableRowVirtualization="True"
+                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                          FontFamily="{StaticResource Font.Ui}"
+                          FontSize="15">
+
+                    <DataGrid.ColumnHeaderStyle>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Background" Value="{StaticResource Brush.SurfaceContainerLow}" />
+                            <Setter Property="Foreground" Value="{StaticResource Brush.OnSurfaceVariant}" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
+                            <Setter Property="Padding" Value="12,0" />
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="VerticalContentAlignment" Value="Center" />
+                        </Style>
+                    </DataGrid.ColumnHeaderStyle>
+
+                    <DataGrid.CellStyle>
+                        <Style TargetType="DataGridCell">
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="Padding" Value="12,0" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="DataGridCell">
+                                        <Border Background="{TemplateBinding Background}"
+                                                Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter VerticalAlignment="Center" />
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </DataGrid.CellStyle>
+
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow">
+                            <Style.Triggers>
+                                <!-- 退職者は薄くする。名簿には残すが、日常の対象ではない -->
+                                <DataTrigger Binding="{Binding IsRetired}" Value="True">
+                                    <Setter Property="Opacity" Value="0.55" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.RowStyle>
+
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="社員番号" Binding="{Binding StaffNo}" Width="110" />
+
+                        <DataGridTemplateColumn Header="スタッフ氏名" Width="*" MinWidth="200">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding NameKana}"
+                                                   FontSize="12"
+                                                   Foreground="{StaticResource Brush.TextMuted}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTextColumn Header="区分" Binding="{Binding EmploymentType}" Width="130" />
+
+                        <DataGridTemplateColumn Header="在籍状態" Width="110">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border CornerRadius="{StaticResource Radius.Button}"
+                                            Padding="10,4"
+                                            HorizontalAlignment="Left">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background"
+                                                        Value="{StaticResource Brush.TertiaryFixed}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsOnLeave}" Value="True">
+                                                        <Setter Property="Background"
+                                                                Value="{StaticResource Brush.SurfaceContainerHigh}" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsRetired}" Value="True">
+                                                        <Setter Property="Background"
+                                                                Value="{StaticResource Brush.ErrorContainer}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <TextBlock Text="{Binding StatusText}"
+                                                   FontSize="13"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{StaticResource Brush.OnSurface}" />
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Header="QRカード発行状況" Width="180">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding QrText}">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground"
+                                                        Value="{StaticResource Brush.OnSurfaceVariant}" />
+                                                <Style.Triggers>
+                                                    <!-- 無効化済みは目立たせる。打刻できない状態そのもの -->
+                                                    <DataTrigger Binding="{Binding HasActiveQr}" Value="False">
+                                                        <Setter Property="Foreground"
+                                                                Value="{StaticResource Brush.Error}" />
+                                                        <Setter Property="FontWeight" Value="SemiBold" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <TextBlock Text="該当するスタッフがいません。"
+                           Style="{StaticResource Text.BodyLg}"
+                           Foreground="{StaticResource Brush.TextMuted}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisible}}" />
+            </Grid>
+        </Grid>
+
+        <!-- 右: 選択中スタッフの詳細と QR カード -->
+        <Border Grid.Column="1"
+                Width="440"
+                Background="{StaticResource Brush.SurfaceContainerLow}"
+                BorderBrush="{StaticResource Brush.BorderSubtle}"
+                BorderThickness="1"
+                CornerRadius="{StaticResource Radius.Card}"
+                Padding="24,20">
+            <Grid>
+                <!-- 未選択のとき。空白のままだと壊れているように見える -->
+                <TextBlock Text="スタッフを選ぶと詳細とQRカードを表示します。"
+                           Style="{StaticResource Text.BodyLg}"
+                           Foreground="{StaticResource Brush.TextMuted}"
+                           TextWrapping="Wrap"
+                           TextAlignment="Center"
+                           VerticalAlignment="Center"
+                           Visibility="{Binding HasSelection, Converter={StaticResource InverseBoolToVisible}}" />
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled"
+                              Visibility="{Binding HasSelection, Converter={StaticResource BoolToVisible}}">
+                <StackPanel>
+                    <TextBlock Text="スタッフ詳細 / QRカード" Style="{StaticResource Text.HeadlineSm}" />
+
+                    <TextBlock Style="{StaticResource Text.HeadlineMd}" Margin="0,16,0,0">
+                        <Run Text="{Binding SelectedStaff.Name, Mode=OneWay}" />
+                    </TextBlock>
+                    <TextBlock Text="{Binding SelectedStaff.NameKana}"
+                               Style="{StaticResource Text.BodyMd}"
+                               Foreground="{StaticResource Brush.TextMuted}" />
+
+                    <Grid Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="社員番号"
+                                       Style="{StaticResource Text.LabelMd}"
+                                       Foreground="{StaticResource Brush.TextMuted}" />
+                            <TextBlock Text="{Binding SelectedStaff.StaffNo}"
+                                       Style="{StaticResource Text.TabularData}" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="区分"
+                                       Style="{StaticResource Text.LabelMd}"
+                                       Foreground="{StaticResource Brush.TextMuted}" />
+                            <TextBlock Text="{Binding SelectedStaff.EmploymentType}"
+                                       Style="{StaticResource Text.TabularData}" />
+                        </StackPanel>
+                    </Grid>
+
+                    <TextBlock Text="在籍状態"
+                               Style="{StaticResource Text.LabelMd}"
+                               Foreground="{StaticResource Brush.TextMuted}"
+                               Margin="0,16,0,0" />
+                    <!--
+                        状態の変更は QR の失効を伴うため、選んだ時点でコマンドへ流す。
+                        「保存」を挟むと、変えたつもりで反映されていない状態が生まれる。
+                    -->
+                    <ComboBox x:Name="StatusSelector"
+                              ItemsSource="{x:Static vm:StaffViewModel.StatusOptions}"
+                              SelectedItem="{Binding SelectedStatus, Mode=OneWay}"
+                              SelectionChanged="OnStatusSelectionChanged"
+                              Margin="0,6,0,0">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Label}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <TextBlock Text="タイムカード・プレビュー（名刺サイズ 91×55mm）"
+                               Style="{StaticResource Text.LabelMd}"
+                               Foreground="{StaticResource Brush.TextMuted}"
+                               Margin="0,20,0,0" />
+
+                    <Border Background="{StaticResource Brush.SurfaceContainerLowest}"
+                            BorderBrush="{StaticResource Brush.OutlineVariant}"
+                            BorderThickness="1"
+                            CornerRadius="{StaticResource Radius.Button}"
+                            Margin="0,8,0,0"
+                            Padding="8">
+                        <Grid>
+                            <Image Source="{Binding CardPng, Converter={StaticResource BytesToImage}}"
+                                   Stretch="Uniform"
+                                   MaxHeight="160" />
+
+                            <TextBlock Text="QRコードが発行されていません。"
+                                       Style="{StaticResource Text.BodyLg}"
+                                       Foreground="{StaticResource Brush.Error}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Margin="0,40"
+                                       Visibility="{Binding CardPng, Converter={StaticResource NullToVisible}}" />
+                        </Grid>
+                    </Border>
+
+                    <!-- よく使う2つを並べ、取り返しのつかない再発行だけ離して置く -->
+                    <Grid Margin="0,16,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0"
+                                Content="編集"
+                                Style="{StaticResource Button.SecondaryTouch}"
+                                Command="{Binding EditCommand}"
+                                Margin="0,0,6,0" />
+
+                        <Button Grid.Column="1"
+                                Content="画像を保存"
+                                Style="{StaticResource Button.SecondaryTouch}"
+                                Command="{Binding SaveCardCommand}"
+                                Margin="6,0,0,0" />
+                    </Grid>
+
+                    <Button Content="QRコードを再発行"
+                            Style="{StaticResource Button.DangerTouch}"
+                            Command="{Binding ReissueQrCommand}"
+                            Margin="0,10,0,0" />
+                </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

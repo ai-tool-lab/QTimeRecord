@@ -1,0 +1,23 @@
+<Project>
+
+  <!--
+    全プロジェクト共通のビルド設定。
+    個別の .csproj には「そのプロジェクト固有の設定」だけを書く。
+  -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- 警告を残さない。打刻データを扱うため、null 参照の見落としを型で潰す -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    <!--
+      和暦・全角・日本語の文字比較を正しく扱うためカルチャ情報を落とさない。
+      既定値と同じだが、意図せず true にされると日付表示が壊れるため明示する。
+    -->
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <NeutralLanguage>ja-JP</NeutralLanguage>
+  </PropertyGroup>
+
+</Project>

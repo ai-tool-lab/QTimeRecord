@@ -1,0 +1,382 @@
+<UserControl x:Class="QTimeRecord.App.Views.AttendanceView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:QTimeRecord.App.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:AttendanceViewModel}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- 月の移動・絞り込み・手動登録 -->
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button Content="◀"
+                        Style="{StaticResource Button.SecondaryTouch}"
+                        Command="{Binding PreviousMonthCommand}"
+                        MinWidth="64"
+                        Padding="0" />
+
+                <TextBlock Text="{Binding MonthLabel}"
+                           Style="{StaticResource Text.HeadlineSm}"
+                           MinWidth="160"
+                           TextAlignment="Center"
+                           VerticalAlignment="Center"
+                           Margin="12,0" />
+
+                <Button Content="▶"
+                        Style="{StaticResource Button.SecondaryTouch}"
+                        Command="{Binding NextMonthCommand}"
+                        MinWidth="64"
+                        Padding="0" />
+
+                <Button Content="今月"
+                        Style="{StaticResource Button.SecondaryTouch}"
+                        Command="{Binding ThisMonthCommand}"
+                        MinWidth="96"
+                        Margin="12,0,0,0" />
+            </StackPanel>
+
+            <ComboBox Grid.Column="1"
+                      ItemsSource="{Binding StaffOptions}"
+                      SelectedItem="{Binding SelectedStaff}"
+                      MinWidth="220"
+                      Margin="20,0,0,0">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <!-- 絞り込み。3つしかないのでボタンで出し、いま何を見ているか常に分かるようにする -->
+            <ListBox Grid.Column="2"
+                     ItemsSource="{x:Static vm:AttendanceViewModel.Filters}"
+                     SelectedItem="{Binding SelectedFilter}"
+                     Background="Transparent"
+                     BorderThickness="0"
+                     Margin="20,0,0,0">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListBoxItem">
+                                    <Border x:Name="Root"
+                                            Background="{TemplateBinding Background}"
+                                            CornerRadius="{StaticResource Radius.Button}"
+                                            MinHeight="{StaticResource Size.TouchMin}"
+                                            MinWidth="120"
+                                            Margin="0,0,8,0"
+                                            Padding="16,12">
+                                        <ContentPresenter HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="Root" Property="Background"
+                                                    Value="{StaticResource Brush.Secondary}" />
+                                            <Setter Property="Foreground"
+                                                    Value="{StaticResource Brush.OnSecondary}" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Setter Property="Background" Value="{StaticResource Brush.SurfaceContainerLow}" />
+                        <Setter Property="Foreground" Value="{StaticResource Brush.OnSurface}" />
+                        <Setter Property="FontFamily" Value="{StaticResource Font.Ui}" />
+                        <Setter Property="FontSize" Value="16" />
+                        <Setter Property="FontWeight" Value="SemiBold" />
+                        <Setter Property="Cursor" Value="Hand" />
+                    </Style>
+                </ListBox.ItemContainerStyle>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Label}" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <Button Grid.Column="4"
+                    Content="打刻を手動登録"
+                    Style="{StaticResource Button.PrimaryTouch}"
+                    Command="{Binding AddCommand}"
+                    MinWidth="220" />
+        </Grid>
+
+        <!-- 件数・CSV出力・読み込みの状態 -->
+        <Grid Grid.Row="1" Margin="0,12,0,8">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="{Binding CountLabel}"
+                           Style="{StaticResource Text.LabelLg}"
+                           Foreground="{StaticResource Brush.OnSurfaceVariant}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,16,0" />
+
+                <!-- 押すと昇順・降順が入れ替わる。文言はいまの並びを表す -->
+                <Button Content="{Binding SortLabel}"
+                        Style="{StaticResource Button.SecondaryTouch}"
+                        Command="{Binding ToggleSortCommand}"
+                        MinHeight="40"
+                        MinWidth="180"
+                        FontSize="15"
+                        Padding="8,4" />
+            </StackPanel>
+
+            <TextBlock Text="読み込み中…"
+                       Style="{StaticResource Text.LabelLg}"
+                       Foreground="{StaticResource Brush.Secondary}"
+                       HorizontalAlignment="Right"
+                       Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisible}}" />
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <!--
+                    出力先を出す。「どこに保存されたか分からない」という
+                    問い合わせがいちばん多いため、開く手段も添える。
+                -->
+                <StackPanel Orientation="Horizontal"
+                            Visibility="{Binding ExportedPath, Converter={StaticResource NullToCollapsed}}">
+                    <TextBlock Text="出力しました:"
+                               Style="{StaticResource Text.LabelLg}"
+                               Foreground="{StaticResource Brush.OnSurfaceVariant}"
+                               VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding ExportedPath}"
+                               Style="{StaticResource Text.LabelLg}"
+                               Foreground="{StaticResource Brush.OnSurfaceVariant}"
+                               VerticalAlignment="Center"
+                               MaxWidth="380"
+                               TextTrimming="CharacterEllipsis"
+                               Margin="6,0,10,0" />
+                    <Button Content="保存先を開く"
+                            Style="{StaticResource Button.SecondaryTouch}"
+                            Command="{Binding OpenExportFolderCommand}"
+                            MinHeight="40"
+                            MinWidth="140"
+                            FontSize="15"
+                            Padding="8,4"
+                            Margin="0,0,12,0" />
+                </StackPanel>
+
+                <Button Content="CSVファイル出力"
+                        Style="{StaticResource Button.SecondaryTouch}"
+                        Command="{Binding ExportCsvCommand}"
+                        MinHeight="40"
+                        MinWidth="180"
+                        FontSize="15"
+                        Padding="8,4" />
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="2">
+            <!-- 一覧。ヘッダは固定し、行だけをスクロールさせる -->
+            <DataGrid ItemsSource="{Binding Rows}"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      HeadersVisibility="Column"
+                      GridLinesVisibility="Horizontal"
+                      HorizontalGridLinesBrush="{StaticResource Brush.BorderSubtle}"
+                      Background="Transparent"
+                      RowBackground="{StaticResource Brush.SurfaceContainerLowest}"
+                      AlternatingRowBackground="{StaticResource Brush.SurfaceContainerLowest}"
+                      BorderThickness="0"
+                      RowHeight="56"
+                      ColumnHeaderHeight="44"
+                      SelectionMode="Single"
+                      CanUserAddRows="False"
+                      CanUserResizeRows="False"
+                      EnableRowVirtualization="True"
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                      FontFamily="{StaticResource Font.Ui}"
+                      FontSize="15">
+
+                <DataGrid.ColumnHeaderStyle>
+                    <Style TargetType="DataGridColumnHeader">
+                        <Setter Property="Background" Value="{StaticResource Brush.SurfaceContainerLow}" />
+                        <Setter Property="Foreground" Value="{StaticResource Brush.OnSurfaceVariant}" />
+                        <Setter Property="FontWeight" Value="SemiBold" />
+                        <Setter Property="Padding" Value="12,0" />
+                        <Setter Property="BorderThickness" Value="0" />
+                        <Setter Property="VerticalContentAlignment" Value="Center" />
+                    </Style>
+                </DataGrid.ColumnHeaderStyle>
+
+                <DataGrid.CellStyle>
+                    <Style TargetType="DataGridCell">
+                        <Setter Property="BorderThickness" Value="0" />
+                        <Setter Property="Padding" Value="12,0" />
+                        <Setter Property="VerticalAlignment" Value="Center" />
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="DataGridCell">
+                                    <Border Background="{TemplateBinding Background}"
+                                            Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter VerticalAlignment="Center" />
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </DataGrid.CellStyle>
+
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="日付" Width="120">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding DateText}" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding DayOfWeekText}" FontSize="13" Margin="2,0,0,0">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground"
+                                                        Value="{StaticResource Brush.OnSurfaceVariant}" />
+                                                <Style.Triggers>
+                                                    <!-- 土日は色を変える（→ plan.md 11-1） -->
+                                                    <DataTrigger Binding="{Binding IsWeekend}" Value="True">
+                                                        <Setter Property="Foreground"
+                                                                Value="{StaticResource Brush.Secondary}" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsSunday}" Value="True">
+                                                        <Setter Property="Foreground"
+                                                                Value="{StaticResource Brush.Error}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTextColumn Header="スタッフ氏名" Binding="{Binding StaffName}" Width="160" />
+                    <DataGridTextColumn Header="区分" Binding="{Binding EmploymentType}" Width="100" />
+                    <DataGridTextColumn Header="出勤" Binding="{Binding ClockInText}" Width="90" />
+                    <DataGridTextColumn Header="退勤" Binding="{Binding ClockOutText}" Width="90" />
+                    <DataGridTextColumn Header="中抜け" Binding="{Binding BreakText}" Width="120" />
+                    <DataGridTextColumn Header="実労働" Binding="{Binding WorkedText}" Width="90" />
+
+                    <DataGridTemplateColumn Header="状態" Width="110">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <!-- 手入力・手修正が判別できることは要件（→ plan.md 11-1） -->
+                                <Border CornerRadius="{StaticResource Radius.Button}"
+                                        Padding="10,4"
+                                        HorizontalAlignment="Left">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background"
+                                                    Value="{StaticResource Brush.SurfaceContainerLow}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding StatusText}" Value="要確認">
+                                                    <Setter Property="Background"
+                                                            Value="{StaticResource Brush.ErrorContainer}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding StatusText}" Value="手入力">
+                                                    <Setter Property="Background"
+                                                            Value="{StaticResource Brush.Primary}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding StatusText}" Value="手修正">
+                                                    <Setter Property="Background"
+                                                            Value="{StaticResource Brush.PrimaryFixed}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <TextBlock Text="{Binding StatusText}" FontSize="13" FontWeight="SemiBold">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground"
+                                                        Value="{StaticResource Brush.OnSurfaceVariant}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding StatusText}" Value="要確認">
+                                                        <Setter Property="Foreground"
+                                                                Value="{StaticResource Brush.OnErrorContainer}" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding StatusText}" Value="手入力">
+                                                        <Setter Property="Foreground"
+                                                                Value="{StaticResource Brush.OnPrimary}" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding StatusText}" Value="手修正">
+                                                        <Setter Property="Foreground"
+                                                                Value="{StaticResource Brush.OnPrimaryFixed}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTextColumn Header="修正理由 / メモ"
+                                        Binding="{Binding Note}"
+                                        Width="*"
+                                        MinWidth="220">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <!-- 長いメモは切り詰める。折り返すと行の高さが揃わない -->
+                                <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                <Setter Property="VerticalAlignment" Value="Center" />
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTemplateColumn Header="操作" Width="120">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="編集"
+                                        Style="{StaticResource Button.SecondaryTouch}"
+                                        MinHeight="40"
+                                        MinWidth="96"
+                                        FontSize="15"
+                                        Padding="8,4"
+                                        Command="{Binding DataContext.EditCommand,
+                                                  RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <!-- 該当なし。空白のままだと読み込みに失敗したように見える -->
+            <TextBlock Text="この条件に当てはまる打刻はありません。"
+                       Style="{StaticResource Text.BodyLg}"
+                       Foreground="{StaticResource Brush.TextMuted}"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisible}}" />
+
+            <Border Background="{StaticResource Brush.ErrorContainer}"
+                    CornerRadius="{StaticResource Radius.Button}"
+                    Padding="20,12"
+                    VerticalAlignment="Top"
+                    Visibility="{Binding ErrorMessage, Converter={StaticResource NullToCollapsed}}">
+                <TextBlock Text="{Binding ErrorMessage}"
+                           Style="{StaticResource Text.BodyLg}"
+                           Foreground="{StaticResource Brush.OnErrorContainer}"
+                           TextWrapping="Wrap" />
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

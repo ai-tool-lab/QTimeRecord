@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    App（WPF）の DI 構成を検証するため net10.0-windows を対象にする。
+    製品自体が Windows 専用なので、テストだけ移植性を保つ意味はない。
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\QTimeRecord.Core\QTimeRecord.Core.csproj" />
+    <ProjectReference Include="..\QTimeRecord.App\QTimeRecord.App.csproj" />
+  </ItemGroup>
+
+</Project>

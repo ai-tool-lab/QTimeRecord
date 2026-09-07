@@ -1,0 +1,94 @@
+<UserControl x:Class="QTimeRecord.App.Views.SetupView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:QTimeRecord.App.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:SetupViewModel}"
+             Background="{StaticResource Brush.Surface}">
+
+    <UserControl.Resources>
+        <Style x:Key="FieldLabel" TargetType="TextBlock" BasedOn="{StaticResource Text.LabelLg}">
+            <Setter Property="Foreground" Value="{StaticResource Brush.OnSurfaceVariant}" />
+            <Setter Property="Margin" Value="0,0,0,6" />
+        </Style>
+        <Style x:Key="Field" TargetType="TextBox">
+            <Setter Property="MinHeight" Value="48" />
+            <Setter Property="Padding" Value="12,10" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Margin" Value="0,0,0,18" />
+            <Setter Property="BorderBrush" Value="{StaticResource Brush.OutlineVariant}" />
+            <Setter Property="Background" Value="{StaticResource Brush.SurfaceContainerLowest}" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Border Background="{StaticResource Brush.SurfaceContainerLowest}"
+                BorderBrush="{StaticResource Brush.OutlineVariant}"
+                BorderThickness="1"
+                CornerRadius="{StaticResource Radius.Card}"
+                MaxWidth="720"
+                Margin="24"
+                Padding="40,32">
+            <StackPanel>
+                <TextBlock Text="初回セットアップ" Style="{StaticResource Text.HeadlineLg}" />
+                <TextBlock Style="{StaticResource Text.BodyLg}"
+                           Foreground="{StaticResource Brush.OnSurfaceVariant}"
+                           TextWrapping="Wrap"
+                           Margin="0,8,0,28"
+                           Text="店舗の情報と管理者パスワードを登録します。あとから店舗設定で変更できます。" />
+
+                <TextBlock Text="会社名" Style="{StaticResource FieldLabel}" />
+                <TextBox Text="{Binding CompanyName, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{StaticResource Field}" />
+
+                <TextBlock Text="店舗名" Style="{StaticResource FieldLabel}" />
+                <TextBox Text="{Binding StoreName, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{StaticResource Field}" />
+
+                <TextBlock Text="店舗コード（任意）" Style="{StaticResource FieldLabel}" />
+                <TextBox Text="{Binding StoreCode, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{StaticResource Field}" />
+
+                <TextBlock Text="1日の開始時刻 / 終了時刻" Style="{StaticResource FieldLabel}" />
+                <TextBlock Style="{StaticResource Text.BodyMd}"
+                           Foreground="{StaticResource Brush.TextMuted}"
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,8"
+                           Text="深夜まで営業する場合は「11:00 〜 05:00」のように指定します。この開始時刻で勤務日の区切りが決まります。" />
+                <StackPanel Orientation="Horizontal">
+                    <TextBox Text="{Binding BusinessDayStart, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource Field}" Width="140" />
+                    <TextBlock Text="〜" VerticalAlignment="Center" Margin="12,0,12,18" FontSize="16" />
+                    <TextBox Text="{Binding BusinessDayEnd, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource Field}" Width="140" />
+                </StackPanel>
+
+                <TextBlock Text="管理者パスワード（8桁の数字）" Style="{StaticResource FieldLabel}" />
+                <TextBox Text="{Binding AdminPin, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{StaticResource Field}"
+                         MaxLength="8"
+                         FontFamily="{StaticResource Font.Numeric}" />
+
+                <Border Background="{StaticResource Brush.ErrorContainer}"
+                        CornerRadius="{StaticResource Radius.Button}"
+                        Padding="16,12"
+                        Margin="0,0,0,18"
+                        Visibility="{Binding ErrorMessage, Converter={StaticResource NullToCollapsed}}">
+                    <TextBlock Text="{Binding ErrorMessage}"
+                               Style="{StaticResource Text.BodyMd}"
+                               Foreground="{StaticResource Brush.OnErrorContainer}"
+                               TextWrapping="Wrap" />
+                </Border>
+
+                <Button Content="登録して開始する"
+                        Style="{StaticResource Button.PrimaryTouch}"
+                        Command="{Binding SubmitCommand}"
+                        HorizontalAlignment="Right"
+                        MinWidth="240" />
+            </StackPanel>
+        </Border>
+    </ScrollViewer>
+</UserControl>

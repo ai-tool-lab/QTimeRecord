@@ -1,0 +1,389 @@
+<UserControl x:Class="QTimeRecord.App.Views.StoreSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:QTimeRecord.App.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:StoreSettingsViewModel}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- 項目が多く、1366x768 の管理画面内では縦に収まらない -->
+        <ScrollViewer Grid.Row="0"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
+            <Grid Margin="0,0,12,0">
+                <!--
+                    3列に並べる。縦に積むと、いちばん使うリーダー設定が
+                    スクロールしないと見えない位置に落ちる。
+                -->
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- 左: 店舗と営業日 -->
+                <StackPanel Grid.Column="0" Width="360" Margin="0,0,20,0">
+                    <TextBlock Text="店舗情報" Style="{StaticResource Text.HeadlineSm}" />
+
+                    <TextBlock Text="会社名"
+                               Style="{StaticResource Text.LabelMd}"
+                               Foreground="{StaticResource Brush.TextMuted}"
+                               Margin="0,16,0,0" />
+                    <!-- 会社名は初回セットアップで決める。ここでは変えられない（→ plan.md Q16） -->
+                    <Border Background="{StaticResource Brush.SurfaceContainerLow}"
+                            CornerRadius="{StaticResource Radius.Button}"
+                            MinHeight="{StaticResource Size.TouchMin}"
+                            Padding="14,0"
+                            Margin="0,6,0,0">
+                        <TextBlock Text="{Binding CompanyName}"
+                                   Style="{StaticResource Text.BodyLg}"
+                                   Foreground="{StaticResource Brush.OnSurfaceVariant}"
+                                   VerticalAlignment="Center" />
+                    </Border>
+
+                    <Grid Margin="0,14,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                            <TextBlock Text="店舗名"
+                                       Style="{StaticResource Text.LabelMd}"
+                                       Foreground="{StaticResource Brush.TextMuted}" />
+                            <TextBox Text="{Binding StoreName, UpdateSourceTrigger=PropertyChanged}"
+                                     Margin="0,6,0,0" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Width="140">
+                            <TextBlock Text="店舗コード"
+                                       Style="{StaticResource Text.LabelMd}"
+                                       Foreground="{StaticResource Brush.TextMuted}" />
+                            <TextBox Text="{Binding StoreCode, UpdateSourceTrigger=PropertyChanged}"
+                                     Margin="0,6,0,0" />
+                        </StackPanel>
+                    </Grid>
+
+                    <TextBlock Text="営業日" Style="{StaticResource Text.HeadlineSm}" Margin="0,24,0,0" />
+                    <!--
+                        ここが打刻の所属日を決める。カレンダー日付ではない
+                        （→ CLAUDE.md 必須ルール1）。開始 11:00 の店舗なら、
+                        翌 02:00 の退勤は前日の営業日に付く。
+                    -->
+                    <TextBlock Text="1日の開始時刻で日を区切ります。深夜勤務は開始時刻より前の打刻が前日ぶんになります。"
+                               Style="{StaticResource Text.BodyMd}"
+                               Foreground="{StaticResource Brush.OnSurfaceVariant}"
+                               TextWrapping="Wrap"
+                               Margin="0,6,0,0" />
+
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                            <TextBlock Text="開始時刻 (HH:mm)"
+                                       Style="{StaticResource Text.LabelMd}"
+                                       Foreground="{StaticResource Brush.TextMuted}" />
+                            <TextBox Text="{Binding BusinessDayStart, UpdateSourceTrigger=PropertyChanged}"
+                                     Margin="0,6,0,0" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="終了時刻 (HH:mm)"
+                                       Style="{StaticResource Text.LabelMd}"
+                                       Foreground="{StaticResource Brush.TextMuted}" />
+                            <TextBox Text="{Binding BusinessDayEnd, UpdateSourceTrigger=PropertyChanged}"
+                                     Margin="0,6,0,0" />
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+
+                <!-- 中央: リーダー（QRスキャナー） -->
+                <StackPanel Grid.Column="1" Width="360" Margin="0,0,20,0">
+                    <TextBlock Text="リーダー設定" Style="{StaticResource Text.HeadlineSm}" Margin="0,0,0,0" />
+
+                    <Grid Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                            <TextBlock Text="接続ポート (COM)"
+                                       Style="{StaticResource Text.LabelMd}"
+                                       Foreground="{StaticResource Brush.TextMuted}" />
+                            <ComboBox ItemsSource="{Binding AvailablePorts}"
+                                      SelectedItem="{Binding ComPort}"
+                                      Margin="0,6,0,0">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <Button Grid.Column="1"
+                                Content="再検出"
+                                Style="{StaticResource Button.SecondaryTouch}"
+                                Command="{Binding RefreshPortsCommand}"
+                                MinWidth="120"
+                                VerticalAlignment="Bottom" />
+                    </Grid>
+
+                    <!-- 4項目を1行に並べる。縦に積むと接続テストの結果が画面から出る -->
+                    <Grid Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                            <TextBlock Text="ボーレート"
+                                       Style="{StaticResource Text.LabelMd}"
+                                       Foreground="{StaticResource Brush.TextMuted}" />
+                            <ComboBox ItemsSource="{x:Static vm:StoreSettingsViewModel.BaudRates}"
+                                      SelectedItem="{Binding BaudRate}"
+                                      Padding="10,0"
+                                      Margin="0,6,0,0">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                            <TextBlock Text="データ"
+                                       Style="{StaticResource Text.LabelMd}"
+                                       Foreground="{StaticResource Brush.TextMuted}" />
+                            <ComboBox ItemsSource="{x:Static vm:StoreSettingsViewModel.DataBitsOptions}"
+                                      SelectedItem="{Binding DataBits}"
+                                      Padding="10,0"
+                                      Margin="0,6,0,0">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" Margin="0,0,8,0">
+                            <TextBlock Text="パリティ"
+                                       Style="{StaticResource Text.LabelMd}"
+                                       Foreground="{StaticResource Brush.TextMuted}" />
+                            <ComboBox ItemsSource="{x:Static vm:StoreSettingsViewModel.ParityOptions}"
+                                      SelectedItem="{Binding Parity}"
+                                      Padding="10,0"
+                                      Margin="0,6,0,0">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="3">
+                            <TextBlock Text="ストップ"
+                                       Style="{StaticResource Text.LabelMd}"
+                                       Foreground="{StaticResource Brush.TextMuted}" />
+                            <ComboBox ItemsSource="{x:Static vm:StoreSettingsViewModel.StopBitsOptions}"
+                                      SelectedItem="{Binding StopBits}"
+                                      Padding="10,0"
+                                      Margin="0,6,0,0">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid Margin="0,16,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0"
+                                   Style="{StaticResource Text.LabelLg}"
+                                   VerticalAlignment="Center">
+                            <Run Text="リーダー: " Foreground="{StaticResource Brush.TextMuted}" />
+                            <Run Text="{Binding ScannerStatusText, Mode=OneWay}" />
+                        </TextBlock>
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Content="接続"
+                                    Style="{StaticResource Button.SecondaryTouch}"
+                                    Command="{Binding ConnectCommand}"
+                                    MinWidth="110"
+                                    Margin="0,0,8,0" />
+                            <Button Content="切断"
+                                    Style="{StaticResource Button.SecondaryTouch}"
+                                    Command="{Binding DisconnectCommand}"
+                                    MinWidth="110" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Button Content="接続テストを実施"
+                            Style="{StaticResource Button.PrimaryTouch}"
+                            Command="{Binding TestConnectionCommand}"
+                            Margin="0,12,0,0" />
+
+                    <!-- 結果。成否が色でも分かるようにする -->
+                    <Border CornerRadius="{StaticResource Radius.Button}"
+                            Padding="16,12"
+                            Margin="0,12,0,0"
+                            Visibility="{Binding TestResult, Converter={StaticResource NullToCollapsed}}">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Background"
+                                        Value="{StaticResource Brush.SurfaceContainerHigh}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding TestSucceeded}" Value="True">
+                                        <Setter Property="Background"
+                                                Value="{StaticResource Brush.TertiaryFixed}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <TextBlock Text="{Binding TestResult}"
+                                   Style="{StaticResource Text.BodyLg}"
+                                   TextWrapping="Wrap" />
+                    </Border>
+                </StackPanel>
+
+                <!-- 右: お知らせ -->
+                <StackPanel Grid.Column="2">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0"
+                                   Text="待機画面のお知らせ"
+                                   Style="{StaticResource Text.HeadlineSm}"
+                                   VerticalAlignment="Center" />
+
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding AnnouncementCountText}"
+                                   Style="{StaticResource Text.TabularData}"
+                                   Foreground="{StaticResource Brush.OnSurfaceVariant}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,12,0" />
+
+                        <Button Grid.Column="2"
+                                Content="項目を追加"
+                                Style="{StaticResource Button.SecondaryTouch}"
+                                Command="{Binding AddAnnouncementCommand}"
+                                MinWidth="160" />
+                    </Grid>
+
+                    <TextBlock Text="件名（最大40文字）"
+                               Style="{StaticResource Text.LabelMd}"
+                               Foreground="{StaticResource Brush.TextMuted}"
+                               Margin="0,16,0,0" />
+                    <TextBox Text="{Binding AnnouncementTitle, UpdateSourceTrigger=PropertyChanged}"
+                             MaxLength="40"
+                             Margin="0,6,0,0" />
+
+                    <ItemsControl ItemsSource="{Binding Announcements}" Margin="0,14,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{StaticResource Brush.SurfaceContainerLow}"
+                                        CornerRadius="{StaticResource Radius.Button}"
+                                        Padding="14,12"
+                                        Margin="0,0,0,10">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="150" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBox Grid.Column="0"
+                                                 Text="{Binding Heading, UpdateSourceTrigger=PropertyChanged}"
+                                                 MaxLength="30"
+                                                 Margin="0,0,10,0" />
+
+                                        <TextBox Grid.Column="1"
+                                                 Text="{Binding Body, UpdateSourceTrigger=PropertyChanged}"
+                                                 MaxLength="200"
+                                                 Margin="0,0,10,0" />
+
+                                        <Button Grid.Column="2"
+                                                Content="削除"
+                                                Style="{StaticResource Button.SecondaryTouch}"
+                                                MinWidth="90"
+                                                FontSize="15"
+                                                Command="{Binding DataContext.RemoveAnnouncementCommand,
+                                                          RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Text="お知らせを登録すると、待機画面の下部にカードで表示されます。"
+                               Style="{StaticResource Text.BodyMd}"
+                               Foreground="{StaticResource Brush.TextMuted}"
+                               TextWrapping="Wrap"
+                               Margin="0,4,0,0" />
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+
+        <!-- 下部: 保存と破棄。未保存かどうかがひと目で分かるようにする -->
+        <Grid Grid.Row="1" Margin="0,16,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <TextBlock Text="保存していない変更があります。"
+                           Style="{StaticResource Text.LabelLg}"
+                           Foreground="{StaticResource Brush.Error}"
+                           Visibility="{Binding IsDirty, Converter={StaticResource BoolToVisible}}" />
+
+                <TextBlock Text="{Binding ErrorMessage}"
+                           Style="{StaticResource Text.BodyLg}"
+                           Foreground="{StaticResource Brush.Error}"
+                           TextWrapping="Wrap"
+                           Visibility="{Binding ErrorMessage, Converter={StaticResource NullToCollapsed}}" />
+            </StackPanel>
+
+            <Button Grid.Column="1"
+                    Content="変更を破棄"
+                    Style="{StaticResource Button.SecondaryTouch}"
+                    Command="{Binding DiscardCommand}"
+                    MinWidth="180"
+                    Margin="0,0,12,0" />
+
+            <Button Grid.Column="2"
+                    Content="設定を保存する"
+                    Style="{StaticResource Button.PrimaryTouch}"
+                    Command="{Binding SaveCommand}"
+                    MinWidth="220" />
+        </Grid>
+    </Grid>
+</UserControl>

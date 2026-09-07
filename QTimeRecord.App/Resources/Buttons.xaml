@@ -1,0 +1,174 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+
+  <!--
+    タッチ操作前提のボタン。DESIGN.md の Components / Touch Ergonomics に対応する。
+
+    hover 前提の表現は使わない。タッチには hover が無いため、押した手応えは
+    IsPressed（沈み込み）で表現する。マウス操作時の hover は補助的に付けるだけ。
+  -->
+
+  <!-- タッチの最小ヒット領域。DESIGN.md: touch-min 4rem / キーパッド 3.5rem -->
+  <sys:Double x:Key="Size.TouchMin">64</sys:Double>
+  <sys:Double x:Key="Size.TouchComfort">80</sys:Double>
+  <sys:Double x:Key="Size.KeypadMin">56</sys:Double>
+
+  <CornerRadius x:Key="Radius.Button">8</CornerRadius>
+  <CornerRadius x:Key="Radius.Card">12</CornerRadius>
+
+  <!-- ボタン共通の土台。見た目は各スタイルで差し替える -->
+  <ControlTemplate x:Key="Template.TouchButton" TargetType="Button">
+    <Border x:Name="Root"
+            Background="{TemplateBinding Background}"
+            BorderBrush="{TemplateBinding BorderBrush}"
+            BorderThickness="{TemplateBinding BorderThickness}"
+            CornerRadius="{StaticResource Radius.Button}"
+            SnapsToDevicePixels="True">
+      <ContentPresenter HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Margin="{TemplateBinding Padding}"
+                        RecognizesAccessKey="True" />
+    </Border>
+    <ControlTemplate.Triggers>
+      <Trigger Property="IsPressed" Value="True">
+        <!-- 押し込みを 2px の沈み込みで返す。タッチでも指の下で変化が見える -->
+        <Setter TargetName="Root" Property="RenderTransform">
+          <Setter.Value>
+            <TranslateTransform Y="2" />
+          </Setter.Value>
+        </Setter>
+        <Setter TargetName="Root" Property="Opacity" Value="0.92" />
+      </Trigger>
+      <Trigger Property="IsMouseOver" Value="True">
+        <Setter TargetName="Root" Property="Opacity" Value="0.94" />
+      </Trigger>
+      <Trigger Property="IsEnabled" Value="False">
+        <Setter TargetName="Root" Property="Opacity" Value="0.38" />
+      </Trigger>
+    </ControlTemplate.Triggers>
+  </ControlTemplate>
+
+  <!-- 主操作。打刻・ログイン・保存 -->
+  <Style x:Key="Button.PrimaryTouch" TargetType="Button">
+    <Setter Property="Template" Value="{StaticResource Template.TouchButton}" />
+    <Setter Property="Background" Value="{StaticResource Brush.Primary}" />
+    <Setter Property="Foreground" Value="{StaticResource Brush.OnPrimary}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="MinHeight" Value="{StaticResource Size.TouchMin}" />
+    <Setter Property="MinWidth" Value="{StaticResource Size.TouchMin}" />
+    <Setter Property="Padding" Value="24,12" />
+    <Setter Property="FontFamily" Value="{StaticResource Font.Ui}" />
+    <Setter Property="FontSize" Value="22" />
+    <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="Cursor" Value="Hand" />
+  </Style>
+
+  <!-- 副操作。キャンセル・戻る -->
+  <Style x:Key="Button.SecondaryTouch" TargetType="Button" BasedOn="{StaticResource Button.PrimaryTouch}">
+    <Setter Property="Background" Value="{StaticResource Brush.SurfaceContainerLow}" />
+    <Setter Property="Foreground" Value="{StaticResource Brush.Primary}" />
+    <Setter Property="BorderBrush" Value="{StaticResource Brush.OutlineVariant}" />
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+
+  <!-- 破壊的操作。削除・失効 -->
+  <Style x:Key="Button.DangerTouch" TargetType="Button" BasedOn="{StaticResource Button.PrimaryTouch}">
+    <Setter Property="Background" Value="{StaticResource Brush.Error}" />
+    <Setter Property="Foreground" Value="{StaticResource Brush.OnError}" />
+  </Style>
+
+  <!-- テンキー。数字は等幅で桁を揃える -->
+  <Style x:Key="Button.Keypad" TargetType="Button">
+    <Setter Property="Template" Value="{StaticResource Template.TouchButton}" />
+    <Setter Property="Background" Value="{StaticResource Brush.SurfaceContainerLowest}" />
+    <Setter Property="Foreground" Value="{StaticResource Brush.OnSurface}" />
+    <Setter Property="BorderBrush" Value="{StaticResource Brush.OutlineVariant}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="MinHeight" Value="{StaticResource Size.KeypadMin}" />
+    <Setter Property="MinWidth" Value="{StaticResource Size.KeypadMin}" />
+    <Setter Property="Margin" Value="6" />
+    <Setter Property="FontFamily" Value="{StaticResource Font.Numeric}" />
+    <Setter Property="FontSize" Value="24" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Cursor" Value="Hand" />
+  </Style>
+
+  <!--
+    打刻種別の大型カード。4枚を色で見分けさせる（→ Colors.xaml の打刻種別の色）。
+
+    共通のボタンと違い、中身は中央寄せにしない。見出しを左下に置き、
+    種別の記号を右上に置くモックの構成をそのまま使う。
+    押下は「沈み込み＋濃い色」で返す。タッチには hover が無いため。
+  -->
+  <ControlTemplate x:Key="Template.PunchCard" TargetType="Button">
+    <Border x:Name="Root"
+            Background="{TemplateBinding Background}"
+            CornerRadius="{StaticResource Radius.Card}"
+            Padding="{TemplateBinding Padding}"
+            SnapsToDevicePixels="True">
+      <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+    </Border>
+    <ControlTemplate.Triggers>
+      <Trigger Property="IsPressed" Value="True">
+        <Setter TargetName="Root" Property="RenderTransform">
+          <Setter.Value>
+            <TranslateTransform Y="2" />
+          </Setter.Value>
+        </Setter>
+      </Trigger>
+      <Trigger Property="IsEnabled" Value="False">
+        <!-- リーダー断で押せないとき。押せないことが一目で分かる程度まで落とす -->
+        <Setter TargetName="Root" Property="Opacity" Value="0.32" />
+      </Trigger>
+    </ControlTemplate.Triggers>
+  </ControlTemplate>
+
+  <Style x:Key="Button.PunchCard" TargetType="Button">
+    <Setter Property="Template" Value="{StaticResource Template.PunchCard}" />
+    <Setter Property="Foreground" Value="{StaticResource Brush.OnPrimary}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="MinHeight" Value="{StaticResource Size.TouchComfort}" />
+    <Setter Property="Padding" Value="24,20" />
+    <Setter Property="Margin" Value="6" />
+    <Setter Property="FontFamily" Value="{StaticResource Font.Ui}" />
+    <Setter Property="Cursor" Value="Hand" />
+  </Style>
+
+  <Style x:Key="Button.PunchClockIn" TargetType="Button" BasedOn="{StaticResource Button.PunchCard}">
+    <Setter Property="Background" Value="{StaticResource Brush.ClockIn}" />
+    <Style.Triggers>
+      <Trigger Property="IsPressed" Value="True">
+        <Setter Property="Background" Value="{StaticResource Brush.ClockInPressed}" />
+      </Trigger>
+    </Style.Triggers>
+  </Style>
+
+  <Style x:Key="Button.PunchClockOut" TargetType="Button" BasedOn="{StaticResource Button.PunchCard}">
+    <Setter Property="Background" Value="{StaticResource Brush.ClockOut}" />
+    <Style.Triggers>
+      <Trigger Property="IsPressed" Value="True">
+        <Setter Property="Background" Value="{StaticResource Brush.ClockOutPressed}" />
+      </Trigger>
+    </Style.Triggers>
+  </Style>
+
+  <Style x:Key="Button.PunchBreakStart" TargetType="Button" BasedOn="{StaticResource Button.PunchCard}">
+    <Setter Property="Background" Value="{StaticResource Brush.BreakStart}" />
+    <Style.Triggers>
+      <Trigger Property="IsPressed" Value="True">
+        <Setter Property="Background" Value="{StaticResource Brush.BreakStartPressed}" />
+      </Trigger>
+    </Style.Triggers>
+  </Style>
+
+  <Style x:Key="Button.PunchBreakEnd" TargetType="Button" BasedOn="{StaticResource Button.PunchCard}">
+    <Setter Property="Background" Value="{StaticResource Brush.BreakEnd}" />
+    <Style.Triggers>
+      <Trigger Property="IsPressed" Value="True">
+        <Setter Property="Background" Value="{StaticResource Brush.BreakEndPressed}" />
+      </Trigger>
+    </Style.Triggers>
+  </Style>
+
+</ResourceDictionary>

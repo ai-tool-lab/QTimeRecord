@@ -1,0 +1,142 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!--
+    ここから下の「打刻種別の色」までは DESIGN.md の front matter から生成した。
+    色や文字サイズを変えるときは DESIGN.md を直し、生成し直すこと。
+    ここだけ手で書き換えるとデザイン定義と実装がずれる。
+  -->
+
+  <!-- 色 -->
+  <Color x:Key="Color.Surface">#F4F6FB</Color>
+  <Color x:Key="Color.SurfaceDim">#D9E2F2</Color>
+  <Color x:Key="Color.SurfaceBright">#F4F6FB</Color>
+  <Color x:Key="Color.SurfaceContainerLowest">#FFFFFF</Color>
+  <Color x:Key="Color.SurfaceContainerLow">#EDF2FA</Color>
+  <Color x:Key="Color.SurfaceContainer">#E8EEF8</Color>
+  <Color x:Key="Color.SurfaceContainerHigh">#DFE6F3</Color>
+  <Color x:Key="Color.SurfaceContainerHighest">#DBE4F4</Color>
+  <Color x:Key="Color.OnSurface">#111827</Color>
+  <Color x:Key="Color.OnSurfaceVariant">#43495A</Color>
+  <Color x:Key="Color.InverseSurface">#293040</Color>
+  <Color x:Key="Color.InverseOnSurface">#EDF0FF</Color>
+  <Color x:Key="Color.Outline">#727A8E</Color>
+  <Color x:Key="Color.OutlineVariant">#C2C9DB</Color>
+  <Color x:Key="Color.SurfaceTint">#243C82</Color>
+  <Color x:Key="Color.Primary">#1D2D5B</Color>
+  <Color x:Key="Color.OnPrimary">#FFFFFF</Color>
+  <Color x:Key="Color.PrimaryContainer">#253B80</Color>
+  <Color x:Key="Color.OnPrimaryContainer">#9BB8FF</Color>
+  <Color x:Key="Color.InversePrimary">#B5C5FC</Color>
+  <Color x:Key="Color.Secondary">#244BBD</Color>
+  <Color x:Key="Color.OnSecondary">#FFFFFF</Color>
+  <Color x:Key="Color.SecondaryContainer">#2F60DE</Color>
+  <Color x:Key="Color.OnSecondaryContainer">#F8FAFF</Color>
+  <Color x:Key="Color.Tertiary">#003E17</Color>
+  <Color x:Key="Color.OnTertiary">#FFFFFF</Color>
+  <Color x:Key="Color.TertiaryContainer">#005823</Color>
+  <Color x:Key="Color.OnTertiaryContainer">#56D474</Color>
+  <Color x:Key="Color.Error">#BA1A1A</Color>
+  <Color x:Key="Color.OnError">#FFFFFF</Color>
+  <Color x:Key="Color.ErrorContainer">#FFDAD6</Color>
+  <Color x:Key="Color.OnErrorContainer">#93000A</Color>
+  <Color x:Key="Color.PrimaryFixed">#DBE1FF</Color>
+  <Color x:Key="Color.PrimaryFixedDim">#B5C5FC</Color>
+  <Color x:Key="Color.OnPrimaryFixed">#051846</Color>
+  <Color x:Key="Color.OnPrimaryFixedVariant">#354574</Color>
+  <Color x:Key="Color.SecondaryFixed">#DCE1FF</Color>
+  <Color x:Key="Color.SecondaryFixedDim">#B6C4FF</Color>
+  <Color x:Key="Color.OnSecondaryFixed">#001550</Color>
+  <Color x:Key="Color.OnSecondaryFixedVariant">#093BAE</Color>
+  <Color x:Key="Color.TertiaryFixed">#A6F5AE</Color>
+  <Color x:Key="Color.TertiaryFixedDim">#8BD894</Color>
+  <Color x:Key="Color.OnTertiaryFixed">#002109</Color>
+  <Color x:Key="Color.OnTertiaryFixedVariant">#005320</Color>
+  <Color x:Key="Color.Background">#F9F9FF</Color>
+  <Color x:Key="Color.OnBackground">#141B2B</Color>
+  <Color x:Key="Color.SurfaceVariant">#DCE2F7</Color>
+  <Color x:Key="Color.TextMuted">#59627A</Color>
+  <Color x:Key="Color.BorderSubtle">#E5EBF5</Color>
+  <Color x:Key="Color.ScanBeam">#2F60DE</Color>
+  <Color x:Key="Color.ScanGlow">#38BDF8</Color>
+
+  <!-- ブラシ（XAML から使うのは基本こちら） -->
+  <SolidColorBrush x:Key="Brush.Surface" Color="{StaticResource Color.Surface}" />
+  <SolidColorBrush x:Key="Brush.SurfaceDim" Color="{StaticResource Color.SurfaceDim}" />
+  <SolidColorBrush x:Key="Brush.SurfaceBright" Color="{StaticResource Color.SurfaceBright}" />
+  <SolidColorBrush x:Key="Brush.SurfaceContainerLowest" Color="{StaticResource Color.SurfaceContainerLowest}" />
+  <SolidColorBrush x:Key="Brush.SurfaceContainerLow" Color="{StaticResource Color.SurfaceContainerLow}" />
+  <SolidColorBrush x:Key="Brush.SurfaceContainer" Color="{StaticResource Color.SurfaceContainer}" />
+  <SolidColorBrush x:Key="Brush.SurfaceContainerHigh" Color="{StaticResource Color.SurfaceContainerHigh}" />
+  <SolidColorBrush x:Key="Brush.SurfaceContainerHighest" Color="{StaticResource Color.SurfaceContainerHighest}" />
+  <SolidColorBrush x:Key="Brush.OnSurface" Color="{StaticResource Color.OnSurface}" />
+  <SolidColorBrush x:Key="Brush.OnSurfaceVariant" Color="{StaticResource Color.OnSurfaceVariant}" />
+  <SolidColorBrush x:Key="Brush.InverseSurface" Color="{StaticResource Color.InverseSurface}" />
+  <SolidColorBrush x:Key="Brush.InverseOnSurface" Color="{StaticResource Color.InverseOnSurface}" />
+  <SolidColorBrush x:Key="Brush.Outline" Color="{StaticResource Color.Outline}" />
+  <SolidColorBrush x:Key="Brush.OutlineVariant" Color="{StaticResource Color.OutlineVariant}" />
+  <SolidColorBrush x:Key="Brush.SurfaceTint" Color="{StaticResource Color.SurfaceTint}" />
+  <SolidColorBrush x:Key="Brush.Primary" Color="{StaticResource Color.Primary}" />
+  <SolidColorBrush x:Key="Brush.OnPrimary" Color="{StaticResource Color.OnPrimary}" />
+  <SolidColorBrush x:Key="Brush.PrimaryContainer" Color="{StaticResource Color.PrimaryContainer}" />
+  <SolidColorBrush x:Key="Brush.OnPrimaryContainer" Color="{StaticResource Color.OnPrimaryContainer}" />
+  <SolidColorBrush x:Key="Brush.InversePrimary" Color="{StaticResource Color.InversePrimary}" />
+  <SolidColorBrush x:Key="Brush.Secondary" Color="{StaticResource Color.Secondary}" />
+  <SolidColorBrush x:Key="Brush.OnSecondary" Color="{StaticResource Color.OnSecondary}" />
+  <SolidColorBrush x:Key="Brush.SecondaryContainer" Color="{StaticResource Color.SecondaryContainer}" />
+  <SolidColorBrush x:Key="Brush.OnSecondaryContainer" Color="{StaticResource Color.OnSecondaryContainer}" />
+  <SolidColorBrush x:Key="Brush.Tertiary" Color="{StaticResource Color.Tertiary}" />
+  <SolidColorBrush x:Key="Brush.OnTertiary" Color="{StaticResource Color.OnTertiary}" />
+  <SolidColorBrush x:Key="Brush.TertiaryContainer" Color="{StaticResource Color.TertiaryContainer}" />
+  <SolidColorBrush x:Key="Brush.OnTertiaryContainer" Color="{StaticResource Color.OnTertiaryContainer}" />
+  <SolidColorBrush x:Key="Brush.Error" Color="{StaticResource Color.Error}" />
+  <SolidColorBrush x:Key="Brush.OnError" Color="{StaticResource Color.OnError}" />
+  <SolidColorBrush x:Key="Brush.ErrorContainer" Color="{StaticResource Color.ErrorContainer}" />
+  <SolidColorBrush x:Key="Brush.OnErrorContainer" Color="{StaticResource Color.OnErrorContainer}" />
+  <SolidColorBrush x:Key="Brush.PrimaryFixed" Color="{StaticResource Color.PrimaryFixed}" />
+  <SolidColorBrush x:Key="Brush.PrimaryFixedDim" Color="{StaticResource Color.PrimaryFixedDim}" />
+  <SolidColorBrush x:Key="Brush.OnPrimaryFixed" Color="{StaticResource Color.OnPrimaryFixed}" />
+  <SolidColorBrush x:Key="Brush.OnPrimaryFixedVariant" Color="{StaticResource Color.OnPrimaryFixedVariant}" />
+  <SolidColorBrush x:Key="Brush.SecondaryFixed" Color="{StaticResource Color.SecondaryFixed}" />
+  <SolidColorBrush x:Key="Brush.SecondaryFixedDim" Color="{StaticResource Color.SecondaryFixedDim}" />
+  <SolidColorBrush x:Key="Brush.OnSecondaryFixed" Color="{StaticResource Color.OnSecondaryFixed}" />
+  <SolidColorBrush x:Key="Brush.OnSecondaryFixedVariant" Color="{StaticResource Color.OnSecondaryFixedVariant}" />
+  <SolidColorBrush x:Key="Brush.TertiaryFixed" Color="{StaticResource Color.TertiaryFixed}" />
+  <SolidColorBrush x:Key="Brush.TertiaryFixedDim" Color="{StaticResource Color.TertiaryFixedDim}" />
+  <SolidColorBrush x:Key="Brush.OnTertiaryFixed" Color="{StaticResource Color.OnTertiaryFixed}" />
+  <SolidColorBrush x:Key="Brush.OnTertiaryFixedVariant" Color="{StaticResource Color.OnTertiaryFixedVariant}" />
+  <SolidColorBrush x:Key="Brush.Background" Color="{StaticResource Color.Background}" />
+  <SolidColorBrush x:Key="Brush.OnBackground" Color="{StaticResource Color.OnBackground}" />
+  <SolidColorBrush x:Key="Brush.SurfaceVariant" Color="{StaticResource Color.SurfaceVariant}" />
+  <SolidColorBrush x:Key="Brush.TextMuted" Color="{StaticResource Color.TextMuted}" />
+  <SolidColorBrush x:Key="Brush.BorderSubtle" Color="{StaticResource Color.BorderSubtle}" />
+  <SolidColorBrush x:Key="Brush.ScanBeam" Color="{StaticResource Color.ScanBeam}" />
+  <SolidColorBrush x:Key="Brush.ScanGlow" Color="{StaticResource Color.ScanGlow}" />
+
+  <!--
+    打刻種別の色。DESIGN.md の front matter には無く、モック
+    （img/メイン画面_打刻.html）から採った。ここだけ出所が違う。
+
+    4種を色で見分けられることは操作の速さに直結する。文字だけにすると
+    タッチする前に読ませることになり、キオスク端末では致命的に遅い。
+    Pressed は各色を暗くしたもの（タッチには hover が無いため押下で表現する）。
+  -->
+  <Color x:Key="Color.ClockIn">#059669</Color>
+  <Color x:Key="Color.ClockInPressed">#047857</Color>
+  <Color x:Key="Color.ClockOut">#3730A3</Color>
+  <Color x:Key="Color.ClockOutPressed">#312E81</Color>
+  <Color x:Key="Color.BreakStart">#D97706</Color>
+  <Color x:Key="Color.BreakStartPressed">#B45309</Color>
+  <Color x:Key="Color.BreakEnd">#334155</Color>
+  <Color x:Key="Color.BreakEndPressed">#1E293B</Color>
+
+  <SolidColorBrush x:Key="Brush.ClockIn" Color="{StaticResource Color.ClockIn}" />
+  <SolidColorBrush x:Key="Brush.ClockInPressed" Color="{StaticResource Color.ClockInPressed}" />
+  <SolidColorBrush x:Key="Brush.ClockOut" Color="{StaticResource Color.ClockOut}" />
+  <SolidColorBrush x:Key="Brush.ClockOutPressed" Color="{StaticResource Color.ClockOutPressed}" />
+  <SolidColorBrush x:Key="Brush.BreakStart" Color="{StaticResource Color.BreakStart}" />
+  <SolidColorBrush x:Key="Brush.BreakStartPressed" Color="{StaticResource Color.BreakStartPressed}" />
+  <SolidColorBrush x:Key="Brush.BreakEnd" Color="{StaticResource Color.BreakEnd}" />
+  <SolidColorBrush x:Key="Brush.BreakEndPressed" Color="{StaticResource Color.BreakEndPressed}" />
+
+</ResourceDictionary>
