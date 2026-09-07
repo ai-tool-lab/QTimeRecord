@@ -29,3 +29,7 @@ publish/
 
 # 発注元から受け取った資料。リポジトリには含めない
 prompt.txt
+
+# note 記事の原稿と、そこでしか使わない画像。手元にのみ置く
+docs/note記事.md
+docs/screenshots/admin-login.png
