@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | [plan.md](plan.md) | **実装計画かつ進行管理台帳。** 全20章・チェックボックス101項目 |
 | [DESIGN.md](DESIGN.md) | Google Stitch 出力のデザイントークン（Precision Kiosk Blue） |
 | [img/](img) | 画面モックアップ 6画面（PNG + HTML の対） |
-| [prompt.txt](prompt.txt) | 発注元の元要件 |
+| `prompt.txt` | 発注元の元要件。**リポジトリには含めない**（手元にのみ置く） |
 | [実機テスト手順.md](実機テスト手順.md) | 実機でしか確かめられない項目の手順（→ plan.md 16-3） |
 | [deploy.md](deploy.md) | 店舗PCへの導入手順。**画面のボタン名を変えたらここも直す** |
 
