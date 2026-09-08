@@ -195,6 +195,24 @@ public sealed class AttendanceAggregatorTests
     }
 
     [Fact]
+    public void 退勤が出勤より前なら実労働を出さない()
+    {
+        // 手修正で「営業日 09/08・退勤 02:00」と入れると、
+        // 打刻日時が出勤より前になることがある。
+        var records = new[]
+        {
+            Record(TimeRecordType.ClockIn, At("12:37")),
+            Record(TimeRecordType.ClockOut, At("02:00")),
+        };
+
+        var summary = AttendanceAggregator.Summarize(StaffId, WorkDate, records);
+
+        // 0.0h と出すと「0時間働いた」ように見える。計算できないことを示す。
+        Assert.Null(summary.WorkedMinutes);
+        Assert.Equal(AttendanceStatus.NeedsReview, summary.Status);
+    }
+
+    [Fact]
     public void 中抜けが実労働を超えても負にしない()
     {
         // 打刻が壊れている場合。負の時間を一覧に出さない。

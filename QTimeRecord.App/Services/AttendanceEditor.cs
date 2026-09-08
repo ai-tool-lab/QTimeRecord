@@ -2,6 +2,7 @@ using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using QTimeRecord.App.ViewModels;
 using QTimeRecord.App.Views.Dialogs;
+using QTimeRecord.Core.Data.Repositories;
 using QTimeRecord.Core.Services;
 
 namespace QTimeRecord.App.Services;
@@ -21,25 +22,35 @@ public interface IAttendanceEditor
     Task<bool> EditAsync(IReadOnlyList<StaffOption> staff, AttendanceRow row);
 }
 
-public sealed class AttendanceEditor(IServiceProvider provider) : IAttendanceEditor
+public sealed class AttendanceEditor(IServiceProvider provider, IStoreRepository stores)
+    : IAttendanceEditor
 {
-    public Task<bool> AddAsync(IReadOnlyList<StaffOption> staff, DateOnly workDate)
+    public async Task<bool> AddAsync(IReadOnlyList<StaffOption> staff, DateOnly workDate)
     {
         var viewModel = provider.GetRequiredService<TimeRecordEditViewModel>();
 
-        viewModel.OpenForAdd(staff, workDate);
+        viewModel.OpenForAdd(staff, workDate, await BusinessDayStartAsync());
 
-        return Task.FromResult(Show(viewModel));
+        return Show(viewModel);
     }
 
-    public Task<bool> EditAsync(IReadOnlyList<StaffOption> staff, AttendanceRow row)
+    public async Task<bool> EditAsync(IReadOnlyList<StaffOption> staff, AttendanceRow row)
     {
         var viewModel = provider.GetRequiredService<TimeRecordEditViewModel>();
 
-        viewModel.OpenForRow(staff, row);
+        viewModel.OpenForRow(staff, row, await BusinessDayStartAsync());
 
-        return Task.FromResult(Show(viewModel));
+        return Show(viewModel);
     }
+
+    /// <summary>
+    /// 店舗の1日の開始時刻。ダイアログが「翌日の打刻か」を判断するのに使う。
+    ///
+    /// 開くたびに読む。設定を変えた直後に古い値で判断すると、
+    /// 深夜の打刻が1日ずれて保存される。
+    /// </summary>
+    private async Task<TimeOnly> BusinessDayStartAsync()
+        => (await stores.GetAsync())?.BusinessDayStart ?? new TimeOnly(0, 0);
 
     private static bool Show(TimeRecordEditViewModel viewModel)
     {

@@ -40,6 +40,12 @@ public sealed partial class TimeRecordEditViewModel : ObservableObject
     private readonly ITimeRecordEditService _editor;
     private readonly IDialogService _dialogs;
 
+    /// <summary>店舗の1日の開始時刻。翌日かどうかの既定を決めるのに使う。</summary>
+    private TimeOnly _businessDayStart;
+
+    /// <summary>利用者が「翌日」を手で切り替えたか。切り替えたら自動判定で上書きしない。</summary>
+    private bool _nextDayTouched;
+
     public TimeRecordEditViewModel(ITimeRecordEditService editor, IDialogService dialogs)
     {
         _editor = editor;
@@ -82,6 +88,16 @@ public sealed partial class TimeRecordEditViewModel : ObservableObject
     [ObservableProperty]
     private DateOnly _workDate;
 
+    /// <summary>
+    /// 打刻日時が営業日の翌日か。
+    ///
+    /// <b>営業日と打刻の暦日は一致しない。</b>開始 09:00 の店舗で営業日 09/08 の退勤が
+    /// 02:00 なら、実際の打刻は 09/09 02:00。これを表現できないと、
+    /// 退勤が出勤より前になり実労働が計算できなくなる。
+    /// </summary>
+    [ObservableProperty]
+    private bool _isNextDay;
+
     /// <summary>テンキーが書き込む4桁。「0930」。</summary>
     [ObservableProperty]
     private string _time = string.Empty;
@@ -97,6 +113,16 @@ public sealed partial class TimeRecordEditViewModel : ObservableObject
 
     /// <summary>スタッフを選べるか。修正では対象を変えさせない。</summary>
     public bool CanChooseStaff => SelectedPunch.Record is null;
+
+    /// <summary>
+    /// 実際に保存される打刻日時。
+    ///
+    /// 営業日と暦日がずれることがあるため、<b>保存される値をそのまま見せる。</b>
+    /// 見せないと、翌日ぶんのつもりで当日に入れてしまう。
+    /// </summary>
+    public string RecordedAtText => ParseTime() is { } at
+        ? at.ToString("yyyy/MM/dd HH:mm", Japanese)
+        : "—";
 
     public string WorkDateText
         => $"{WorkDate:yyyy年M月d日}（{Japanese.DateTimeFormat.GetShortestDayName(WorkDate.DayOfWeek)}）";
@@ -127,8 +153,15 @@ public sealed partial class TimeRecordEditViewModel : ObservableObject
     public ICommand NextDayCommand { get; }
 
     /// <summary>新規登録として開く。</summary>
-    public void OpenForAdd(IEnumerable<StaffOption> staff, DateOnly workDate)
+    /// <param name="staff">選べるスタッフ。</param>
+    /// <param name="workDate">既定の営業日。</param>
+    /// <param name="businessDayStart">店舗の1日の開始時刻。翌日判定の基準。</param>
+    public void OpenForAdd(
+        IEnumerable<StaffOption> staff, DateOnly workDate, TimeOnly businessDayStart)
     {
+        _businessDayStart = businessDayStart;
+        _nextDayTouched = false;
+
         SetStaffOptions(staff);
 
         Punches.Clear();
@@ -136,14 +169,19 @@ public sealed partial class TimeRecordEditViewModel : ObservableObject
         SelectedPunch = PunchOption.New;
 
         WorkDate = workDate;
+        IsNextDay = false;
         Time = string.Empty;
         Note = string.Empty;
     }
 
     /// <summary>一覧の行から開く。その日の打刻を選んで直せるようにする。</summary>
-    public void OpenForRow(IEnumerable<StaffOption> staff, AttendanceRow row)
+    public void OpenForRow(
+        IEnumerable<StaffOption> staff, AttendanceRow row, TimeOnly businessDayStart)
     {
         ArgumentNullException.ThrowIfNull(row);
+
+        _businessDayStart = businessDayStart;
+        _nextDayTouched = false;
 
         SetStaffOptions(staff);
 
@@ -193,9 +231,8 @@ public sealed partial class TimeRecordEditViewModel : ObservableObject
             return null;
         }
 
-        // 営業日をまたぐ打刻（深夜の退勤など）は、営業日と暦日がずれる。
-        // ここでは暦日として「営業日 + 時刻」を組み、日跨ぎは日付の送りで表す。
-        return WorkDate.ToDateTime(new TimeOnly(hour, minute));
+        // 深夜勤務では営業日と暦日がずれる。「翌日」の指定を暦日に反映する。
+        return WorkDate.AddDays(IsNextDay ? 1 : 0).ToDateTime(new TimeOnly(hour, minute));
     }
 
     private async Task SaveAsync()
@@ -309,11 +346,18 @@ public sealed partial class TimeRecordEditViewModel : ObservableObject
         if (value.Record is { } record)
         {
             SelectedRecordType = RecordTypes.First(t => t.Type == record.RecordType);
+
+            // 保存されている暦日から復元する。時刻だけ読むと翌日ぶんが当日に戻る。
+            _nextDayTouched = true;
+            IsNextDay = DateOnly.FromDateTime(record.RecordedAt) > record.WorkDate;
+
             Time = record.RecordedAt.ToString("HHmm", Japanese);
             Note = record.Note ?? string.Empty;
         }
         else
         {
+            _nextDayTouched = false;
+            IsNextDay = false;
             Time = string.Empty;
             Note = string.Empty;
         }
@@ -323,12 +367,53 @@ public sealed partial class TimeRecordEditViewModel : ObservableObject
         NotifyCommandsChanged();
     }
 
-    partial void OnWorkDateChanged(DateOnly value) => OnPropertyChanged(nameof(WorkDateText));
+    partial void OnWorkDateChanged(DateOnly value)
+    {
+        OnPropertyChanged(nameof(WorkDateText));
+        OnPropertyChanged(nameof(RecordedAtText));
+    }
+
+    partial void OnIsNextDayChanged(bool value) => OnPropertyChanged(nameof(RecordedAtText));
 
     partial void OnTimeChanged(string value)
     {
+        ApplyNextDayDefault();
+
         OnPropertyChanged(nameof(TimeText));
+        OnPropertyChanged(nameof(RecordedAtText));
         NotifyCommandsChanged();
+    }
+
+    /// <summary>
+    /// 時刻が揃った時点で、翌日かどうかの既定を決める。
+    ///
+    /// 開始 09:00 の店舗で 02:00 と入れたなら、それは翌日の未明。
+    /// QR で打刻したときと同じ暦日になるよう合わせる。
+    /// 手で切り替えたあとは上書きしない。
+    /// </summary>
+    private void ApplyNextDayDefault()
+    {
+        if (_nextDayTouched || Time.Length != TimeDigits || !Time.All(char.IsAsciiDigit))
+        {
+            return;
+        }
+
+        var hour = int.Parse(Time[..2], Japanese);
+        var minute = int.Parse(Time[2..], Japanese);
+
+        if (hour > 23 || minute > 59)
+        {
+            return;
+        }
+
+        IsNextDay = new TimeOnly(hour, minute) < _businessDayStart;
+    }
+
+    /// <summary>「翌日」を手で切り替える。以後は自動判定で上書きしない。</summary>
+    public void ToggleNextDay(bool value)
+    {
+        _nextDayTouched = true;
+        IsNextDay = value;
     }
 
     partial void OnSelectedStaffChanged(StaffOption? value) => NotifyCommandsChanged();

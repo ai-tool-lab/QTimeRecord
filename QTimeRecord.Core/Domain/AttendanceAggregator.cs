@@ -105,8 +105,12 @@ public static class AttendanceAggregator
 
         var breaks = PairBreaks(ordered);
 
-        var worked = clockIn is not null && clockOut is not null
-            ? (int)Math.Max((clockOut.RecordedAt - clockIn.RecordedAt).TotalMinutes, 0) - breaks.Minutes
+        // 退勤が出勤より前になっている日は、実労働を計算しない。
+        // 0 として出すと「0時間働いた」ように見え、打刻が壊れていることが伝わらない。
+        var worked = clockIn is not null
+            && clockOut is not null
+            && clockOut.RecordedAt >= clockIn.RecordedAt
+            ? (int)(clockOut.RecordedAt - clockIn.RecordedAt).TotalMinutes - breaks.Minutes
             : (int?)null;
 
         return new DailyAttendance
@@ -128,7 +132,11 @@ public static class AttendanceAggregator
             HasManualAdd = ordered.Any(r => r.EntryMethod == EntryMethod.ManualAdd),
             HasManualEdit = ordered.Any(r => r.EntryMethod == EntryMethod.ManualEdit),
             NeedsReview = ordered.Count > 0
-                && (clockIn is null || clockOut is null || breaks.HasUnclosed || HasAnomaly(ordered)),
+                && (clockIn is null
+                    || clockOut is null
+                    || clockOut.RecordedAt < clockIn.RecordedAt
+                    || breaks.HasUnclosed
+                    || HasAnomaly(ordered)),
             Note = ordered.LastOrDefault(r => !string.IsNullOrWhiteSpace(r.Note))?.Note,
             Records = ordered,
         };

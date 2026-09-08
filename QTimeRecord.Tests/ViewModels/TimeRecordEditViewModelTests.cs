@@ -10,6 +10,15 @@ public sealed class TimeRecordEditViewModelTests
     private static readonly Guid StaffId = Guid.CreateVersion7();
     private static readonly DateOnly WorkDate = new(2026, 9, 6);
 
+    /// <summary>
+    /// 0時始まり＝営業日と暦日が一致する店舗。「翌日」の既定が働かないため、
+    /// 日跨ぎに関係しないテストの期待値はこれまでどおりになる。
+    /// </summary>
+    private static readonly TimeOnly BusinessDayStart = new(0, 0);
+
+    /// <summary>11時始まり。深夜まで開ける店舗の日跨ぎを確かめるために使う。</summary>
+    private static readonly TimeOnly LateNightStart = new(11, 0);
+
     [Theory]
     [InlineData("", "__:__")]
     [InlineData("09", "09:__")]
@@ -17,7 +26,7 @@ public sealed class TimeRecordEditViewModelTests
     public void 入力中の時刻は下線で桁を見せる(string digits, string expected)
     {
         var (viewModel, _, _) = Create();
-        viewModel.OpenForAdd(StaffOptions, WorkDate);
+        viewModel.OpenForAdd(StaffOptions, WorkDate, BusinessDayStart);
 
         viewModel.Time = digits;
 
@@ -31,7 +40,7 @@ public sealed class TimeRecordEditViewModelTests
     public void 四桁がそろえば時刻になる(string digits, int hour, int minute)
     {
         var (viewModel, _, _) = Create();
-        viewModel.OpenForAdd(StaffOptions, WorkDate);
+        viewModel.OpenForAdd(StaffOptions, WorkDate, BusinessDayStart);
 
         viewModel.Time = digits;
 
@@ -47,7 +56,7 @@ public sealed class TimeRecordEditViewModelTests
     public void 範囲外や桁不足は保存できない(string digits)
     {
         var (viewModel, _, _) = Create();
-        viewModel.OpenForAdd(StaffOptions, WorkDate);
+        viewModel.OpenForAdd(StaffOptions, WorkDate, BusinessDayStart);
 
         viewModel.Time = digits;
 
@@ -59,7 +68,7 @@ public sealed class TimeRecordEditViewModelTests
     public void 営業日を前後に動かせる()
     {
         var (viewModel, _, _) = Create();
-        viewModel.OpenForAdd(StaffOptions, WorkDate);
+        viewModel.OpenForAdd(StaffOptions, WorkDate, BusinessDayStart);
 
         viewModel.PreviousDayCommand.Execute(null);
         Assert.Equal(new DateOnly(2026, 9, 5), viewModel.WorkDate);
@@ -73,7 +82,7 @@ public sealed class TimeRecordEditViewModelTests
     public void 新規登録では削除できない()
     {
         var (viewModel, _, _) = Create();
-        viewModel.OpenForAdd(StaffOptions, WorkDate);
+        viewModel.OpenForAdd(StaffOptions, WorkDate, BusinessDayStart);
 
         Assert.False(viewModel.CanDelete);
         Assert.Equal("打刻を追加", viewModel.Title);
@@ -87,7 +96,7 @@ public sealed class TimeRecordEditViewModelTests
 
         viewModel.OpenForRow(StaffOptions, RowWith(
             (TimeRecordType.ClockIn, "09:00"),
-            (TimeRecordType.ClockOut, "18:00")));
+            (TimeRecordType.ClockOut, "18:00")), BusinessDayStart);
 
         // 打刻2件 ＋ 「新しい打刻を追加」。打刻漏れの補填はこの行から行うのが自然。
         Assert.Equal(3, viewModel.Punches.Count);
@@ -101,7 +110,7 @@ public sealed class TimeRecordEditViewModelTests
 
         viewModel.OpenForRow(StaffOptions, RowWith(
             (TimeRecordType.ClockIn, "09:00"),
-            (TimeRecordType.ClockOut, "18:05")));
+            (TimeRecordType.ClockOut, "18:05")), BusinessDayStart);
 
         viewModel.SelectedPunch = viewModel.Punches[1];
 
@@ -119,7 +128,7 @@ public sealed class TimeRecordEditViewModelTests
     {
         var (viewModel, _, _) = Create();
 
-        viewModel.OpenForRow(StaffOptions, RowWith((TimeRecordType.ClockIn, "09:00")));
+        viewModel.OpenForRow(StaffOptions, RowWith((TimeRecordType.ClockIn, "09:00")), BusinessDayStart);
         Assert.Equal("0900", viewModel.Time);
 
         viewModel.SelectedPunch = viewModel.Punches[^1];
@@ -132,7 +141,7 @@ public sealed class TimeRecordEditViewModelTests
     public async Task 保存すると登録して完了を通知する()
     {
         var (viewModel, editor, _) = Create();
-        viewModel.OpenForAdd(StaffOptions, WorkDate);
+        viewModel.OpenForAdd(StaffOptions, WorkDate, BusinessDayStart);
         viewModel.Time = "0930";
 
         var completed = false;
@@ -154,7 +163,7 @@ public sealed class TimeRecordEditViewModelTests
         editor.Warning = "未来の日時です。このまま登録しますか？";
         dialogs.ConfirmResult = true;
 
-        viewModel.OpenForAdd(StaffOptions, WorkDate);
+        viewModel.OpenForAdd(StaffOptions, WorkDate, BusinessDayStart);
         viewModel.Time = "0930";
 
         await ((CommunityToolkit.Mvvm.Input.IAsyncRelayCommand)viewModel.SaveCommand)
@@ -171,7 +180,7 @@ public sealed class TimeRecordEditViewModelTests
         editor.Warning = "未来の日時です。このまま登録しますか？";
         dialogs.ConfirmResult = false;
 
-        viewModel.OpenForAdd(StaffOptions, WorkDate);
+        viewModel.OpenForAdd(StaffOptions, WorkDate, BusinessDayStart);
         viewModel.Time = "0930";
 
         var completed = false;
@@ -190,7 +199,7 @@ public sealed class TimeRecordEditViewModelTests
         var (viewModel, editor, _) = Create();
         editor.Error = "スタッフが見つかりません。";
 
-        viewModel.OpenForAdd(StaffOptions, WorkDate);
+        viewModel.OpenForAdd(StaffOptions, WorkDate, BusinessDayStart);
         viewModel.Time = "0930";
 
         await ((CommunityToolkit.Mvvm.Input.IAsyncRelayCommand)viewModel.SaveCommand)
@@ -206,7 +215,7 @@ public sealed class TimeRecordEditViewModelTests
         var (viewModel, editor, _) = Create();
         editor.Throw = true;
 
-        viewModel.OpenForAdd(StaffOptions, WorkDate);
+        viewModel.OpenForAdd(StaffOptions, WorkDate, BusinessDayStart);
         viewModel.Time = "0930";
 
         var completed = false;
@@ -226,7 +235,7 @@ public sealed class TimeRecordEditViewModelTests
         var (viewModel, editor, dialogs) = Create();
         dialogs.ConfirmResult = true;
 
-        viewModel.OpenForRow(StaffOptions, RowWith((TimeRecordType.ClockIn, "09:00")));
+        viewModel.OpenForRow(StaffOptions, RowWith((TimeRecordType.ClockIn, "09:00")), BusinessDayStart);
 
         await ((CommunityToolkit.Mvvm.Input.IAsyncRelayCommand)viewModel.DeleteCommand)
             .ExecuteAsync(null);
@@ -241,7 +250,7 @@ public sealed class TimeRecordEditViewModelTests
         var (viewModel, editor, dialogs) = Create();
         dialogs.ConfirmResult = false;
 
-        viewModel.OpenForRow(StaffOptions, RowWith((TimeRecordType.ClockIn, "09:00")));
+        viewModel.OpenForRow(StaffOptions, RowWith((TimeRecordType.ClockIn, "09:00")), BusinessDayStart);
 
         await ((CommunityToolkit.Mvvm.Input.IAsyncRelayCommand)viewModel.DeleteCommand)
             .ExecuteAsync(null);
@@ -255,7 +264,7 @@ public sealed class TimeRecordEditViewModelTests
     {
         var (viewModel, _, _) = Create();
 
-        viewModel.OpenForAdd([StaffOption.Everyone, .. StaffOptions], WorkDate);
+        viewModel.OpenForAdd([StaffOption.Everyone, .. StaffOptions], WorkDate, BusinessDayStart);
 
         // 「全スタッフ」に打刻を登録することはできない。
         Assert.DoesNotContain(viewModel.StaffOptions, o => o.Id is null);
@@ -272,6 +281,81 @@ public sealed class TimeRecordEditViewModelTests
     }
 
     // ---- 補助 ----
+
+    [Fact]
+    public void 営業開始より前の時刻は翌日として扱う()
+    {
+        var (viewModel, _, _) = Create();
+        viewModel.OpenForAdd(StaffOptions, WorkDate, LateNightStart);
+
+        viewModel.Time = "0200";
+
+        // 11時始まりの店では 02:00 の退勤は翌朝。当日 02:00 にすると出勤より前になる。
+        Assert.True(viewModel.IsNextDay);
+        Assert.Equal(WorkDate.AddDays(1).ToDateTime(new TimeOnly(2, 0)), viewModel.ParseTime());
+    }
+
+    [Fact]
+    public void 営業開始以降の時刻は当日のまま()
+    {
+        var (viewModel, _, _) = Create();
+        viewModel.OpenForAdd(StaffOptions, WorkDate, LateNightStart);
+
+        viewModel.Time = "2200";
+
+        Assert.False(viewModel.IsNextDay);
+        Assert.Equal(WorkDate.ToDateTime(new TimeOnly(22, 0)), viewModel.ParseTime());
+    }
+
+    [Fact]
+    public void 翌日を手で外したら自動判定に戻さない()
+    {
+        var (viewModel, _, _) = Create();
+        viewModel.OpenForAdd(StaffOptions, WorkDate, LateNightStart);
+        viewModel.Time = "0200";
+
+        viewModel.ToggleNextDay(false);
+        viewModel.Time = "0300";
+
+        // 打ち直すたびに翌日へ戻ると、管理者の指定を上書きしてしまう。
+        Assert.False(viewModel.IsNextDay);
+        Assert.Equal(WorkDate.ToDateTime(new TimeOnly(3, 0)), viewModel.ParseTime());
+    }
+
+    [Fact]
+    public void 翌日に記録された打刻は翌日のまま開く()
+    {
+        var (viewModel, _, _) = Create();
+        var record = NewRecord(TimeRecordType.ClockOut, "02:00");
+        record.RecordedAt = WorkDate.AddDays(1).ToDateTime(new TimeOnly(2, 0));
+
+        var summary = AttendanceAggregator.Summarize(
+            StaffId, WorkDate, [NewRecord(TimeRecordType.ClockIn, "22:00"), record]);
+
+        viewModel.OpenForRow(
+            StaffOptions,
+            new AttendanceRow(summary, "山田 太郎", "E-01", "アルバイト"),
+            LateNightStart);
+        viewModel.SelectedPunch = viewModel.Punches.First(p => p.Record?.Id == record.Id);
+
+        // 時刻だけ読み戻すと、開き直して保存しただけで前日へずれる。
+        Assert.True(viewModel.IsNextDay);
+        Assert.Equal(record.RecordedAt, viewModel.ParseTime());
+    }
+
+    [Fact]
+    public void 打刻日時には暦日を出す()
+    {
+        var (viewModel, _, _) = Create();
+        viewModel.OpenForAdd(StaffOptions, WorkDate, LateNightStart);
+
+        Assert.Equal("—", viewModel.RecordedAtText);
+
+        viewModel.Time = "0200";
+
+        // 営業日と暦日がずれることを、保存前に管理者へ見せる。
+        Assert.Equal("2026/09/07 02:00", viewModel.RecordedAtText);
+    }
 
     private static IReadOnlyList<StaffOption> StaffOptions =>
     [

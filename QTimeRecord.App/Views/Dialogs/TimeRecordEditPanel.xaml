@@ -127,6 +127,41 @@
                                 Padding="0" />
                     </Grid>
 
+                    <!--
+                        深夜勤務では営業日と暦日がずれる。
+                        実際に保存される日時を必ず見せる。見せないと、
+                        翌日ぶんのつもりで当日に入れて実労働が計算できなくなる。
+                    -->
+                    <Grid Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <ToggleButton Grid.Column="0"
+                                      x:Name="NextDayCheck"
+                                      Content="翌日"
+                                      Style="{StaticResource Button.Toggle}"
+                                      IsChecked="{Binding IsNextDay, Mode=OneWay}"
+                                      Click="OnNextDayClick"
+                                      VerticalAlignment="Center"
+                                      Margin="0,0,12,0" />
+
+                        <Border Grid.Column="1"
+                                Background="{StaticResource Brush.SurfaceContainerLow}"
+                                CornerRadius="{StaticResource Radius.Button}"
+                                MinHeight="{StaticResource Size.TouchMin}"
+                                Padding="14,0">
+                            <TextBlock VerticalAlignment="Center">
+                                <Run Text="打刻日時: "
+                                     Foreground="{StaticResource Brush.TextMuted}"
+                                     FontSize="14" />
+                                <Run Text="{Binding RecordedAtText, Mode=OneWay}"
+                                     FontWeight="SemiBold" />
+                            </TextBlock>
+                        </Border>
+                    </Grid>
+
                     <TextBlock Text="修正理由 / メモ"
                                Style="{StaticResource Text.LabelLg}"
                                Foreground="{StaticResource Brush.OnSurfaceVariant}"

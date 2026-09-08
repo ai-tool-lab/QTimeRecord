@@ -414,11 +414,46 @@ public sealed class SampleScreenshots
 
         viewModel.OpenForRow(
             [new StaffOption(staffId, "高橋 美咲"), new StaffOption(Guid.CreateVersion7(), "田中 健一")],
-            new AttendanceRow(summary, "高橋 美咲", "E-0182", "パート"));
+            new AttendanceRow(summary, "高橋 美咲", "E-0182", "パート"),
+            new TimeOnly(9, 0));
 
         viewModel.SelectedPunch = viewModel.Punches[3];
 
         ViewRenderer.SaveAsPng<TimeRecordEditPanel>(viewModel, Output("time-record-edit"), 980, 768);
+    }
+
+    /// <summary>
+    /// 深夜勤務の退勤を手入力した状態。営業日 9/5 のまま暦日が 9/6 になることを
+    /// 保存前に見せられているかを、ここで確かめる。
+    /// </summary>
+    [Fact(Skip = "目視確認用。必要なときだけ Skip を外して実行する。")]
+    public void 打刻の修正ダイアログ_翌日()
+    {
+        var editor = new NoopEditService();
+        var viewModel = new TimeRecordEditViewModel(editor, new NoopDialogService());
+
+        var workDate = new DateOnly(2026, 9, 5);
+        var staffId = Guid.CreateVersion7();
+
+        var records = new List<TimeRecord>
+        {
+            SampleRecord(staffId, workDate, TimeRecordType.ClockIn, "21:30", EntryMethod.Qr),
+        };
+
+        var summary = AttendanceAggregator.Summarize(staffId, workDate, records);
+
+        viewModel.OpenForRow(
+            [new StaffOption(staffId, "高橋 美咲"), new StaffOption(Guid.CreateVersion7(), "田中 健一")],
+            new AttendanceRow(summary, "高橋 美咲", "E-0182", "パート"),
+            new TimeOnly(11, 0));
+
+        viewModel.SelectedPunch = viewModel.Punches[^1];
+        viewModel.SelectedRecordType = TimeRecordEditViewModel.RecordTypes.First(
+            t => t.Type == TimeRecordType.ClockOut);
+        viewModel.Time = "0215";
+
+        ViewRenderer.SaveAsPng<TimeRecordEditPanel>(
+            viewModel, Output("time-record-edit-nextday"), 980, 768);
     }
 
     private static TimeRecord SampleRecord(

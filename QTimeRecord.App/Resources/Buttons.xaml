@@ -72,6 +72,61 @@
     <Setter Property="BorderThickness" Value="1" />
   </Style>
 
+  <!--
+    2値の切り替え。既定の CheckBox は 13px 角の枠で、指では狙えないうえ、
+    平坦なボタンと並べると旧世代の見た目が浮く（→ CLAUDE.md「デザインの適用方針」）。
+    押せる面をボタンと同じ大きさにし、入りきりを色の反転で返す。
+  -->
+  <ControlTemplate x:Key="Template.ToggleButton" TargetType="ToggleButton">
+    <Border x:Name="Root"
+            Background="{TemplateBinding Background}"
+            BorderBrush="{TemplateBinding BorderBrush}"
+            BorderThickness="{TemplateBinding BorderThickness}"
+            CornerRadius="{StaticResource Radius.Button}"
+            SnapsToDevicePixels="True">
+      <ContentPresenter HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Margin="{TemplateBinding Padding}"
+                        RecognizesAccessKey="True" />
+    </Border>
+    <ControlTemplate.Triggers>
+      <Trigger Property="IsChecked" Value="True">
+        <Setter TargetName="Root" Property="Background" Value="{StaticResource Brush.Primary}" />
+        <Setter TargetName="Root" Property="BorderBrush" Value="{StaticResource Brush.Primary}" />
+        <Setter Property="Foreground" Value="{StaticResource Brush.OnPrimary}" />
+      </Trigger>
+      <Trigger Property="IsPressed" Value="True">
+        <Setter TargetName="Root" Property="RenderTransform">
+          <Setter.Value>
+            <TranslateTransform Y="2" />
+          </Setter.Value>
+        </Setter>
+        <Setter TargetName="Root" Property="Opacity" Value="0.92" />
+      </Trigger>
+      <Trigger Property="IsMouseOver" Value="True">
+        <Setter TargetName="Root" Property="Opacity" Value="0.94" />
+      </Trigger>
+      <Trigger Property="IsEnabled" Value="False">
+        <Setter TargetName="Root" Property="Opacity" Value="0.38" />
+      </Trigger>
+    </ControlTemplate.Triggers>
+  </ControlTemplate>
+
+  <Style x:Key="Button.Toggle" TargetType="ToggleButton">
+    <Setter Property="Template" Value="{StaticResource Template.ToggleButton}" />
+    <Setter Property="Background" Value="{StaticResource Brush.SurfaceContainerLowest}" />
+    <Setter Property="Foreground" Value="{StaticResource Brush.OnSurface}" />
+    <Setter Property="BorderBrush" Value="{StaticResource Brush.OutlineVariant}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="MinHeight" Value="{StaticResource Size.KeypadMin}" />
+    <Setter Property="MinWidth" Value="{StaticResource Size.KeypadMin}" />
+    <Setter Property="Padding" Value="20,10" />
+    <Setter Property="FontFamily" Value="{StaticResource Font.Ui}" />
+    <Setter Property="FontSize" Value="18" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Cursor" Value="Hand" />
+  </Style>
+
   <!-- 破壊的操作。削除・失効 -->
   <Style x:Key="Button.DangerTouch" TargetType="Button" BasedOn="{StaticResource Button.PrimaryTouch}">
     <Setter Property="Background" Value="{StaticResource Brush.Error}" />
