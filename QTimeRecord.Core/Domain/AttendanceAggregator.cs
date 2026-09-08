@@ -58,8 +58,17 @@ public sealed record DailyAttendance
 
     public bool HasManualEdit { get; init; }
 
+    /// <summary>
+    /// 要確認にした理由。空なら要確認ではない。
+    ///
+    /// <b>理由を持たない「要確認」を作らない。</b>バッジだけ出しても、
+    /// 一覧には最初の出勤と最後の退勤しか出ていないため、
+    /// 管理者はどの打刻を直せばよいのか分からない（2026-09-09 の申告）。
+    /// </summary>
+    public required IReadOnlyList<string> ReviewReasons { get; init; }
+
     /// <summary>出勤・退勤の欠け、対応の取れない中抜け、異常な遷移のいずれかがある。</summary>
-    public bool NeedsReview { get; init; }
+    public bool NeedsReview => ReviewReasons.Count > 0;
 
     /// <summary>出勤か退勤が欠けている。「打刻漏れ」の絞り込みに使う。</summary>
     public bool IsIncomplete => ClockInAt is null || ClockOutAt is null;
@@ -131,12 +140,7 @@ public static class AttendanceAggregator
 
             HasManualAdd = ordered.Any(r => r.EntryMethod == EntryMethod.ManualAdd),
             HasManualEdit = ordered.Any(r => r.EntryMethod == EntryMethod.ManualEdit),
-            NeedsReview = ordered.Count > 0
-                && (clockIn is null
-                    || clockOut is null
-                    || clockOut.RecordedAt < clockIn.RecordedAt
-                    || breaks.HasUnclosed
-                    || HasAnomaly(ordered)),
+            ReviewReasons = ReviewReasons(ordered, clockIn, clockOut, breaks.HasUnclosed),
             Note = ordered.LastOrDefault(r => !string.IsNullOrWhiteSpace(r.Note))?.Note,
             Records = ordered,
         };
@@ -193,10 +197,55 @@ public static class AttendanceAggregator
     }
 
     /// <summary>
-    /// 異常な遷移を含むか。打刻時と同じ判定を通す。
+    /// 要確認にする理由をすべて挙げる。無ければ空。
+    ///
+    /// 実労働の長さは理由にしない。12時間勤務も夜勤も正常な打刻であり、
+    /// 長さの妥当性は勤怠の締めで見るもので、打刻の壊れとは別の話。
+    /// </summary>
+    private static IReadOnlyList<string> ReviewReasons(
+        IReadOnlyList<TimeRecord> ordered,
+        TimeRecord? clockIn,
+        TimeRecord? clockOut,
+        bool hasUnclosedBreak)
+    {
+        if (ordered.Count == 0)
+        {
+            return [];
+        }
+
+        var reasons = new List<string>();
+
+        if (clockIn is null)
+        {
+            reasons.Add("出勤の打刻がありません。");
+        }
+
+        if (clockOut is null)
+        {
+            reasons.Add("退勤の打刻がありません。");
+        }
+
+        if (clockIn is not null && clockOut is not null && clockOut.RecordedAt < clockIn.RecordedAt)
+        {
+            reasons.Add("退勤が出勤より前になっています。");
+        }
+
+        if (hasUnclosedBreak)
+        {
+            reasons.Add("中抜け終了の打刻がありません。");
+        }
+
+        reasons.AddRange(Anomalies(ordered));
+
+        // 同じ理由が打刻ごとに何度も並ぶと読めない。
+        return reasons.Distinct().ToList();
+    }
+
+    /// <summary>
+    /// 異常な遷移の理由。打刻時と同じ判定を通す。
     /// 重複の判定は使わない（保存済みのものは重複ではない）。
     /// </summary>
-    private static bool HasAnomaly(IReadOnlyList<TimeRecord> ordered)
+    private static IEnumerable<string> Anomalies(IReadOnlyList<TimeRecord> ordered)
     {
         var state = PunchState.NotClockedIn;
 
@@ -205,14 +254,12 @@ public static class AttendanceAggregator
             var judgement = PunchStateMachine.Evaluate(
                 state, record.RecordType, latest: null, record.RecordedAt);
 
-            if (judgement.Decision == PunchDecision.Warning)
+            if (judgement is { Decision: PunchDecision.Warning, Reason: { } reason })
             {
-                return true;
+                yield return reason;
             }
 
             state = PunchStateMachine.StateAfter(record.RecordType);
         }
-
-        return false;
     }
 }

@@ -69,6 +69,16 @@ public sealed record AttendanceRowView(AttendanceRow Source)
         ? $"{minutes / 60.0:0.0}h"
         : "—";
 
+    /// <summary>
+    /// 要確認の理由。要確認でなければ null。
+    ///
+    /// 一覧には最初の出勤と最後の退勤しか出ないため、バッジだけでは
+    /// どの打刻が原因なのか分からない。理由は編集ダイアログにも同じものを出す。
+    /// </summary>
+    public string? ReviewReasonText => Source.Summary.ReviewReasons.Count > 0
+        ? string.Join(Environment.NewLine, Source.Summary.ReviewReasons)
+        : null;
+
     public string StatusText => Source.Status switch
     {
         AttendanceStatus.NeedsReview => "要確認",

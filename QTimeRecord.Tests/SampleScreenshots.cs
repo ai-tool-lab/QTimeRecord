@@ -456,6 +456,40 @@ public sealed class SampleScreenshots
             viewModel, Output("time-record-edit-nextday"), 980, 768);
     }
 
+    /// <summary>
+    /// 要確認の理由を出した状態。中抜けの閉じ忘れは一覧では「—」としか出ないため、
+    /// この画面で理由を伝えないと、管理者はどの打刻を直せばよいのか分からない。
+    /// </summary>
+    [Fact(Skip = "目視確認用。必要なときだけ Skip を外して実行する。")]
+    public void 打刻の修正ダイアログ_要確認の理由()
+    {
+        var editor = new NoopEditService();
+        var viewModel = new TimeRecordEditViewModel(editor, new NoopDialogService());
+
+        var workDate = new DateOnly(2026, 9, 5);
+        var staffId = Guid.CreateVersion7();
+
+        var records = new List<TimeRecord>
+        {
+            SampleRecord(staffId, workDate, TimeRecordType.ClockIn, "10:00", EntryMethod.Qr),
+            SampleRecord(staffId, workDate, TimeRecordType.BreakStart, "12:00", EntryMethod.Qr),
+            SampleRecord(staffId, workDate, TimeRecordType.ClockOut, "19:30", EntryMethod.Qr),
+            SampleRecord(staffId, workDate, TimeRecordType.ClockIn, "20:00", EntryMethod.Qr),
+        };
+
+        var summary = AttendanceAggregator.Summarize(staffId, workDate, records);
+
+        viewModel.OpenForRow(
+            [new StaffOption(staffId, "高橋 美咲"), new StaffOption(Guid.CreateVersion7(), "田中 健一")],
+            new AttendanceRow(summary, "高橋 美咲", "E-0182", "パート"),
+            new TimeOnly(9, 0));
+
+        viewModel.SelectedPunch = viewModel.Punches[1];
+
+        ViewRenderer.SaveAsPng<TimeRecordEditPanel>(
+            viewModel, Output("time-record-edit-review"), 980, 768);
+    }
+
     private static TimeRecord SampleRecord(
         Guid staffId,
         DateOnly workDate,

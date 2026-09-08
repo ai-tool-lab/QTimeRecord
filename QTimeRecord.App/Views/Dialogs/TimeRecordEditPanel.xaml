@@ -25,15 +25,45 @@
 
         <Grid Margin="24,18">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
+                <!--
+                    中身は縦に伸びる（要確認の理由・エラー）。ボタンだけは常に見えるよう
+                    行を分けて固定する。届かない「保存」は、無いのと同じ。
+                -->
+                <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" Text="{Binding Title}" Style="{StaticResource Text.HeadlineSm}" />
+          <ScrollViewer Grid.Row="0"
+                        VerticalScrollBarVisibility="Auto"
+                        HorizontalScrollBarVisibility="Disabled">
+            <StackPanel>
+            <StackPanel>
+                <TextBlock Text="{Binding Title}" Style="{StaticResource Text.HeadlineSm}" />
 
-            <Grid Grid.Row="1" Margin="0,16,0,0">
+                <!--
+                    要確認の理由。バッジだけでは、一覧に出ていない打刻が原因のとき
+                    （中抜けの閉じ忘れ・出勤の重複など）に管理者が気づけない。
+                -->
+                <Border Background="{StaticResource Brush.ErrorContainer}"
+                        CornerRadius="{StaticResource Radius.Button}"
+                        Padding="16,10"
+                        Margin="0,12,0,0"
+                        Visibility="{Binding ReviewReasonText,
+                                     Converter={StaticResource NullToCollapsed}}">
+                    <StackPanel>
+                        <TextBlock Text="要確認の理由"
+                                   Style="{StaticResource Text.LabelLg}"
+                                   Foreground="{StaticResource Brush.OnErrorContainer}" />
+                        <TextBlock Text="{Binding ReviewReasonText}"
+                                   Style="{StaticResource Text.BodyLg}"
+                                   Foreground="{StaticResource Brush.OnErrorContainer}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,2,0,0" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <Grid Margin="0,16,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
@@ -162,19 +192,9 @@
                         </Border>
                     </Grid>
 
-                    <TextBlock Text="修正理由 / メモ"
-                               Style="{StaticResource Text.LabelLg}"
-                               Foreground="{StaticResource Brush.OnSurfaceVariant}"
-                               Margin="0,12,0,0" />
-                    <TextBox Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}"
-                             MinHeight="{StaticResource Size.TouchMin}"
-                             VerticalContentAlignment="Center"
-                             Padding="12,0"
-                             FontSize="16"
-                             Margin="0,6,0,0" />
                 </StackPanel>
 
-                <!-- 右: 時刻。テンキーで HHMM を組み立てる -->
+                <!-- 右: 時刻とメモ。テンキーで HHMM を組み立てる -->
                 <StackPanel Grid.Column="1" Width="360">
                     <TextBlock Text="時刻（24時間・HHMM）"
                                Style="{StaticResource Text.LabelLg}"
@@ -197,11 +217,25 @@
                                             Margin="0,12,0,0"
                                             MaxLength="{x:Static vm:TimeRecordEditViewModel.TimeDigits}"
                                             Value="{Binding Time, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <!--
+                        メモは左でなく、テンキーの下に置く。左の列のほうが高く、
+                        ここに置くと 768px の端末で入力欄とボタンが画面外へ出る。
+                    -->
+                    <TextBlock Text="修正理由 / メモ"
+                               Style="{StaticResource Text.LabelLg}"
+                               Foreground="{StaticResource Brush.OnSurfaceVariant}"
+                               Margin="0,12,0,0" />
+                    <TextBox Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}"
+                             MinHeight="{StaticResource Size.TouchMin}"
+                             VerticalContentAlignment="Center"
+                             Padding="12,0"
+                             FontSize="16"
+                             Margin="0,6,0,0" />
                 </StackPanel>
             </Grid>
 
-            <Border Grid.Row="2"
-                    Background="{StaticResource Brush.ErrorContainer}"
+            <Border Background="{StaticResource Brush.ErrorContainer}"
                     CornerRadius="{StaticResource Radius.Button}"
                     Padding="20,12"
                     Margin="0,16,0,0"
@@ -212,7 +246,10 @@
                            TextWrapping="Wrap" />
             </Border>
 
-            <Grid Grid.Row="3" Margin="0,16,0,0">
+            </StackPanel>
+          </ScrollViewer>
+
+            <Grid Grid.Row="1" Margin="0,16,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />

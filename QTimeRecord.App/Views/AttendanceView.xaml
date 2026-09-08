@@ -280,7 +280,8 @@
                                 <!-- 手入力・手修正が判別できることは要件（→ plan.md 11-1） -->
                                 <Border CornerRadius="{StaticResource Radius.Button}"
                                         Padding="10,4"
-                                        HorizontalAlignment="Left">
+                                        HorizontalAlignment="Left"
+                                        ToolTip="{Binding ReviewReasonText}">
                                     <Border.Style>
                                         <Style TargetType="Border">
                                             <Setter Property="Background"

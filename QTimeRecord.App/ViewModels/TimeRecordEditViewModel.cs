@@ -114,6 +114,10 @@ public sealed partial class TimeRecordEditViewModel : ObservableObject
     /// <summary>スタッフを選べるか。修正では対象を変えさせない。</summary>
     public bool CanChooseStaff => SelectedPunch.Record is null;
 
+    /// <summary>この行が要確認になっている理由。無ければ null。</summary>
+    [ObservableProperty]
+    private string? _reviewReasonText;
+
     /// <summary>
     /// 実際に保存される打刻日時。
     ///
@@ -161,6 +165,7 @@ public sealed partial class TimeRecordEditViewModel : ObservableObject
     {
         _businessDayStart = businessDayStart;
         _nextDayTouched = false;
+        ReviewReasonText = null;
 
         SetStaffOptions(staff);
 
@@ -182,6 +187,13 @@ public sealed partial class TimeRecordEditViewModel : ObservableObject
 
         _businessDayStart = businessDayStart;
         _nextDayTouched = false;
+
+        // なぜ要確認なのかは、直しに来たこの画面で伝える。
+        // 一覧には最初の出勤と最後の退勤しか出ないため、
+        // バッジだけでは、どの打刻を直せばよいのか分からない。
+        ReviewReasonText = row.Summary.ReviewReasons.Count > 0
+            ? string.Join(Environment.NewLine, row.Summary.ReviewReasons)
+            : null;
 
         SetStaffOptions(staff);
 

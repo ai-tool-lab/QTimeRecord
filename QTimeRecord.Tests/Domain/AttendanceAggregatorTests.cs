@@ -254,6 +254,72 @@ public sealed class AttendanceAggregatorTests
 
     // ---- 補助 ----
 
+    [Fact]
+    public void 長時間勤務は要確認にしない()
+    {
+        // 19:57 出勤 → 翌 08:10 退勤。夜勤としてあり得る打刻で、壊れてはいない。
+        var summary = AttendanceAggregator.Summarize(StaffId, WorkDate,
+        [
+            Record(TimeRecordType.ClockIn, At("19:57")),
+            Record(TimeRecordType.ClockOut, At("08:10").AddDays(1)),
+        ]);
+
+        Assert.Equal(733, summary.WorkedMinutes);
+        Assert.Empty(summary.ReviewReasons);
+        Assert.Equal(AttendanceStatus.Normal, summary.Status);
+    }
+
+    [Fact]
+    public void 中抜けを閉じ忘れた日は理由を出す()
+    {
+        var summary = Summarize(
+            (TimeRecordType.ClockIn, "09:00"),
+            (TimeRecordType.BreakStart, "12:00"),
+            (TimeRecordType.ClockOut, "18:00"));
+
+        // 一覧の中抜け列は「—」のまま。理由を持たないと、
+        // なぜ要確認なのか管理者に伝わらない。
+        Assert.Equal(0, summary.BreakCount);
+        Assert.Contains("中抜け終了の打刻がありません。", summary.ReviewReasons);
+        Assert.Equal(AttendanceStatus.NeedsReview, summary.Status);
+    }
+
+    [Fact]
+    public void 退勤したあとの出勤は理由を出す()
+    {
+        var summary = Summarize(
+            (TimeRecordType.ClockIn, "09:00"),
+            (TimeRecordType.ClockOut, "18:00"),
+            (TimeRecordType.ClockIn, "19:00"));
+
+        // 一覧には最初の出勤 09:00 と最後の退勤 18:00 しか出ない。
+        // 原因になった 19:00 の出勤は、理由を出さなければ見えない。
+        Assert.Contains("すでに退勤しています。", summary.ReviewReasons);
+    }
+
+    [Fact]
+    public void 同じ理由を何度も並べない()
+    {
+        var summary = Summarize(
+            (TimeRecordType.ClockIn, "09:00"),
+            (TimeRecordType.ClockIn, "10:00"),
+            (TimeRecordType.ClockIn, "11:00"),
+            (TimeRecordType.ClockOut, "18:00"));
+
+        Assert.Equal(["すでに出勤しています。"], summary.ReviewReasons);
+    }
+
+    [Fact]
+    public void 要確認でない日は理由を持たない()
+    {
+        var summary = Summarize(
+            (TimeRecordType.ClockIn, "09:00"),
+            (TimeRecordType.ClockOut, "18:00"));
+
+        Assert.Empty(summary.ReviewReasons);
+        Assert.False(summary.NeedsReview);
+    }
+
     private static DailyAttendance Summarize(params (TimeRecordType Type, string Time)[] punches)
         => AttendanceAggregator.Summarize(
             StaffId, WorkDate, punches.Select(p => Record(p.Type, At(p.Time))));

@@ -148,7 +148,9 @@ public static class PunchStateMachine
         (PunchState.Working, TimeRecordType.BreakEnd) => "中抜け開始の打刻がありません。",
 
         (PunchState.OnBreak, TimeRecordType.BreakStart) => "すでに中抜け中です。",
-        (PunchState.OnBreak, _) => "中抜け中です。中抜け終了の打刻がありません。",
+        // 日次集計が挙げる理由と同じ文にする。文が違うと、
+        // 同じ「中抜けの閉じ忘れ」が要確認の理由として二重に並ぶ。
+        (PunchState.OnBreak, _) => "中抜け終了の打刻がありません。",
 
         // 退勤後の再出勤は運用としてあり得る（早番 → 中抜け → 遅番）。
         // 禁止せず、警告して記録する（→ plan.md Q8）。
