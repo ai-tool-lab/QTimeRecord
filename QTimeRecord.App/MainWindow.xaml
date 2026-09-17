@@ -7,6 +7,7 @@
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:ShellViewModel}"
         Title="QTimeRecord"
+        Icon="pack://application:,,,/Resources/AppIcon.ico"
         Height="768" Width="1366"
         MinHeight="720" MinWidth="1280"
         WindowStartupLocation="CenterScreen"

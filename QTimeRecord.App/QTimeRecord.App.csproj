@@ -5,6 +5,12 @@
     <TargetFramework>net10.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+
+    <!--
+      exe に埋め込むアイコン。エクスプローラー・デスクトップのショートカット・タスクバーに出る。
+      元画像は img/appicon.png。作り直すときは python tools/make_icon.py
+    -->
+    <ApplicationIcon>Resources\AppIcon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,6 +19,9 @@
 
   <ItemGroup>
     <Content Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+
+    <!-- ウィンドウのアイコン。exe の埋め込みとは別に、WPF のリソースとして読む -->
+    <Resource Include="Resources\AppIcon.ico" />
 
     <!--
       MIT / Apache-2.0 は、配布物に著作権表示とライセンス本文を含めることを求めている。
